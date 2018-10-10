@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="wifisync">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/wifisync.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/libs/wifisync.jar!/" />
+    </SOURCES>
+  </library>
+</component>

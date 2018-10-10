@@ -1,0 +1,83 @@
+<idea-plugin>
+    <version>3.10</version>
+    <idea-version since-build="107.121"/>
+    <id>com.apicloud.plugin</id><!--插件唯一标识-->
+    <name>Apicloud Plugin</name><!--插件显示名称-->
+    <vendor email="695137400@qq.com">李志超</vendor><!--备注，作者信息-->
+    <description><![CDATA[
+                    <p>本插件是为了方便开发<a href="https://www.apicloud.com"></a>Apicloud</p>
+                    <p>This plugin is for the convenience of development<a href="https://www.apicloud.com"></a>Apicloud</p>
+                    <p>本插件是在官方公布在<a href="https://github.com/apicloudcom/WebStorm-APICloud-Plugins">github</a>上的源码进行编写，不涉及版权</p>
+                    <p>According to the source code to modify<a href="https://github.com/apicloudcom/WebStorm-APICloud-Plugins">github</a></p>
+                    <p>本插件是第二次更新版本，第一次版本更新发布在<a href="https://community.apicloud.com/bbs/thread-79331-1-1.html">Apicloud官方论坛</a></p>
+                    <p>one version posted in<a href="https://community.apicloud.com/bbs/thread-79331-1-1.html">Apicloud</a></p>
+                    <p>控制台代码参考<a href="https://github.com/kookob/mybatis-log-plugin">mybatis-log-plugin</a>如果有侵犯原作者版权的地方，请联系本人销毁</p>
+                    <p>the console code reference<a href="https://github.com/kookob/mybatis-log-plugin">mybatis-log-plugin</a></p>
+                    <div>
+                        本插件目前实现功能：<br>
+                        Functional description：
+                        <ul>
+                        <li>创建Apicloud工程</li>
+                        <li>Create  Apicloud to a project</li>
+                        <li>USB运行同步到手机</li>
+                        <li>USB to mobile the project</li>
+                        <li>官方基本API代码快速提示</li>
+                        <li>the code The official templates</li>
+                        <li>输出日志到自定义控制台</li>
+                        <li>WIFI 同步到手机</li>
+                        <li>WIFI to mobile the project</li>
+                        <li>console message</li>
+                        <li>其它均采用官方代码修改</li>
+                        <li>插件源代码已经公布在github,详细见地址：<a href="https://github.com/695137400/ApicloudPlugins">Apicloud Plugin</a></li>
+                        <li>github：<a href="https://github.com/695137400/ApicloudPlugins">Apicloud Plugin</a></li>
+                    </ul>
+                    </div>
+        ]]></description><!--描述-->
+    <change-notes><![CDATA[
+                       <ul>
+                        <li>修改同一个目录下面多个工程时使用WIFI发布会错乱(仅存在多个工程相同的ID的情况，如果ID不一样则没问题)</li>
+                        <li>Using WIFI to release will be in disorder when modifying multiple projects under the same catalog(only if multiple projects have the same ID, it is ok if the ID is different)  </li>
+                        <li>修改日志打印，添加日志输出时间显示</li>
+                        <li>Modify log print and add log output time display </li>
+                        <li>修改其它稳定性</li>
+                        <li>Modify other stability </li>
+                        <li>最新代码已经提交github，欢迎下载</li>
+                        <li>The latest code has been submitted to github, welcome to download</li>
+                         <li>修改上一个版本中偶现WIFI不能运行，xml文件打开失败</li>
+                         <li>Changes on a version of incidental WIFI can not run</li>
+                         <li>重置多终端端口占用规则，支持多工具打开多个端口</li>
+                         <li>Reset the terminal port occupy more rules, support multiple tools to open multiple ports</li>
+                    </ul>
+]]></change-notes>
+    <!--<depends>com.intellij.modules.lang</depends>&lt;!&ndash;&ndash;&gt;-->
+    <depends>com.intellij.modules.platform</depends>
+    <extensions defaultExtensionNs="com.intellij">
+        <projectTemplatesFactory implementation="com.apicloud.plugin.Project.ApicloudTemplateFactory"/><!--兼容IDEA-->
+        <directoryProjectGenerator implementation="com.apicloud.plugin.Project.ApicloudProjectTemplateGenerator"/><!--兼容WebStorm-->
+        <executor implementation="com.apicloud.plugin.tail.TailRunExecutor" id="ApicloudLogTail"/>
+        <search.topHitProvider implementation="com.apicloud.plugin.ApicloudOptionsTopHitProvider"/>
+        <!-- <fileEditorProvider implementation="com.apicloud.plugin.ui.split.preview.ApicloudSplitEditorProvider"/>-->
+    </extensions>
+    <!--  <application-components>
+          <component>
+              <implementation-class>com.apicloud.plugin.ui.ApicloudConfigEdit</implementation-class>
+          </component>
+      </application-components>-->
+    <actions>
+        <action id="ApicloudRunAction" class="com.apicloud.plugin.run.AndroidApicloudRunAction">
+            <add-to-group group-id="RunnerActions" anchor="after" relative-to-action="RefactoringMenu"/><!--添加运行按钮-->
+        </action>
+        <action id="IOSRunAction" class="com.apicloud.plugin.run.IosApicloudRunAction">
+            <add-to-group group-id="RunnerActions" anchor="after" relative-to-action="RefactoringMenu"/><!--添加运行按钮-->
+        </action>
+        <action id="WifiServiceAction" class="com.apicloud.plugin.run.WifiApicloudRunAction">
+            <add-to-group group-id="RunnerActions" anchor="after" relative-to-action="RefactoringMenu"/><!--添加运行按钮-->
+        </action>
+        <action id="PushRunAction" class="com.apicloud.plugin.run.PushRunAction">
+            <add-to-group group-id="RunnerActions" anchor="after" relative-to-action="RefactoringMenu"/><!--添加运行按钮-->
+        </action>
+        <!--  <group id="Markdown.Toolbar.Left" class="com.intellij.openapi.actionSystem.DefaultActionGroup" text="Markdown editor actions"/>
+          <group id="Markdown.Toolbar.Right" class="com.intellij.openapi.actionSystem.DefaultActionGroup" text="Markdown editor layout actions"/>-->
+    </actions>
+
+</idea-plugin>

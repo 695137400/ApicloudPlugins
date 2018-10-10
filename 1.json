@@ -1,0 +1,133 @@
+{
+  "access": {
+    "accessText": "*"
+  },
+  "appDescription": "\n        API Example App.\n    ",
+  "appId": "A6914338590058",
+  "appName": "CapitalOperation",
+  "author": {
+    "authorName": "NkXing",
+    "email": "695137400@qq.com",
+    "href": "http://www.apicloud.com"
+  },
+  "content": "index.html",
+  "feature": [
+    {
+      "forceBind": true,
+      "param": [
+        {
+          "name": "urlScheme",
+          "value": "wx7779c7c063a9d4d9"
+        },
+        {
+          "name": "apiKey",
+          "value": "wx7779c7c063a9d4d9"
+        }
+      ],
+      "titleName": "weiXin"
+    },
+    {
+      "forceBind": true,
+      "param": [
+        {
+          "name": "urlScheme",
+          "value": "wb1062272715"
+        },
+        {
+          "name": "apiKey",
+          "value": "1062272715"
+        }
+      ],
+      "titleName": "sinaWeiBo"
+    },
+    {
+      "forceBind": true,
+      "param": [
+        {
+          "name": "urlScheme",
+          "value": "AliPayA00000000001"
+        }
+      ],
+      "titleName": "aliPay"
+    },
+    {
+      "forceBind": true,
+      "param": [
+        {
+          "name": "apiKey",
+          "value": "fef72715gshjelke"
+        }
+      ],
+      "titleName": "baiduLocation"
+    },
+    {
+      "forceBind": true,
+      "param": [
+        {
+          "name": "android_api_key",
+          "value": "fef72715gshjelke"
+        },
+        {
+          "name": "ios_api_key",
+          "value": "fef72715gshjelke"
+        }
+      ],
+      "titleName": "baiduMap"
+    },
+    {
+      "forceBind": true,
+      "param": [
+        {
+          "name": "urlScheme",
+          "value": "tencent9c7c063a9d4d9"
+        },
+        {
+          "name": "apiKey",
+          "value": "9c7c063a9d4d9"
+        }
+      ],
+      "titleName": "qq"
+    }
+  ],
+  "permission": {
+    "bootCompleted": true,
+    "call": true,
+    "camera": true,
+    "contact": true,
+    "fileSystem": true,
+    "hardware": true,
+    "internetl": false,
+    "location": true,
+    "readPhoneState": true,
+    "record": true,
+    "sms": true
+  },
+  "preference": {
+    "allowKeyboardExtension": true,
+    "appBackground": "",
+    "appCertificateVerify": true,
+    "autoLaunch": true,
+    "autoUpdate": true,
+    "backgroundMode": "",
+    "checkSslTrusted": true,
+    "customRefreshHeader": "",
+    "debug": false,
+    "dragAndDrop": true,
+    "fileShare": false,
+    "font": "",
+    "forbiddenSchemes": "",
+    "frameBackgroundColor": "",
+    "fullScreen": false,
+    "launcher": true,
+    "pageBounce": true,
+    "querySchemes": "",
+    "smartUpdate": true,
+    "softInputBarEnabled": true,
+    "softInputMode": "auto",
+    "statusBarAppearance": true,
+    "urlScheme": "",
+    "userAgent": "",
+    "windowBackground": ""
+  },
+  "version": "0.0.1"
+}

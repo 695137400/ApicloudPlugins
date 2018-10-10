@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="wifisyncmanager">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/wifisyncmanager.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
