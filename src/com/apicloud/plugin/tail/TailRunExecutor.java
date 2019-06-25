@@ -1,80 +1,57 @@
 package com.apicloud.plugin.tail;
 
-import com.intellij.execution.Executor;
-import com.intellij.execution.ExecutorRegistry;
-import com.intellij.icons.AllIcons;
-import org.jetbrains.annotations.NonNls;
+import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowFactory;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
 /**
  * Window Config
+ *
  * @author ob
  */
-public class TailRunExecutor extends Executor {
-	public static final Icon ToolWindowRun =     new ImageIcon(TailRunExecutor.class.getResource("/com/apicloud/plugin/icons/apicloud.png"));
-	//public static final Icon ToolWindowRun = ApicloudIcon.ApicloudIcon;
+public class TailRunExecutor implements ToolWindowFactory, DumbAware {
 
-	public static final String TOOLWINDOWS_ID = "Apicloud";
-	@NonNls
-	public static final String EXECUTOR_ID = "ApicloudLogTail";
+    public static final Icon ToolWindowRun = new ImageIcon(TailRunExecutor.class.getResource("/com/apicloud/plugin/icons/apicloud.png"));
+    //public static final Icon ToolWindowRun = ApicloudIcon.ApicloudIcon;
+    public static String TOOLWINDOWS_ID = "Apicloud";
+    private Project project = null;
 
-	@Override
-	@NotNull
-	public String getStartActionText() {
-		return TOOLWINDOWS_ID;
-	}
+    public TailRunExecutor() {
+        System.out.println("TailRunExecutor ....................");
+    }
 
-	@Override
-	public String getToolWindowId() {
-		return TOOLWINDOWS_ID;
-	}
+    @Override
+    public void init(ToolWindow window) {
+        System.out.println("com.apicloud.plugin.tail.TailRunExecutor.init");
+        final TailContentExecutor executor = new TailContentExecutor(project);
+        Disposer.register(project, executor);
+        executor.run(window);
+        System.out.println("apicloud createToolWindowContent");
+        window.setIcon(ToolWindowRun);
+    }
 
-	@Override
-	public Icon getToolWindowIcon() {
-		return ToolWindowRun;
-	}
+    @Override
+    public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
 
-	@Override
-	@NotNull
-	public Icon getIcon() {
-		return AllIcons.Actions.Execute;
-	}
+    }
 
-	@Override
-	public Icon getDisabledIcon() {
-		return AllIcons.Process.DisabledRun;
-	}
 
-	@Override
-	public String getDescription() {
-		return null;
-	}
+    @Override
+    public boolean shouldBeAvailable(@NotNull Project project) {
+        this.project = project;
+        System.out.println("com.apicloud.plugin.tail.TailRunExecutor.shouldBeAvailable");
+        return true;
+    }
 
-	@Override
-	@NotNull
-	public String getActionName() {
-		return TOOLWINDOWS_ID;
-	}
+    @Override
+    public boolean isDoNotActivateOnStart() {
+        return true;
+    }
 
-	@Override
-	@NotNull
-	public String getId() {
-		return EXECUTOR_ID;
-	}
 
-	@Override
-	public String getContextActionId() {
-		return "ApicloudActionId";
-	}
-
-	@Override
-	public String getHelpId() {
-		return null;
-	}
-
-	public static Executor getRunExecutorInstance() {
-		return ExecutorRegistry.getInstance().getExecutorById(EXECUTOR_ID);
-	}
 }

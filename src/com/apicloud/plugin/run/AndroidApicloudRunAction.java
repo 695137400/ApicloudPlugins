@@ -1,17 +1,24 @@
 package com.apicloud.plugin.run;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.apicloud.console.log.ConsoleLog;
-import com.apicloud.plugin.Project.ApicloudProjectTemplateGenerator;
-import com.apicloud.plugin.tail.TailRunExecutor;
+import com.apicloud.plugin.util.HttpClientUtil;
 import com.apicloud.plugin.util.PrintUtil;
+import com.apicloud.plugin.util.RunProperties;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 
 import javax.swing.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Properties;
 
 /**
@@ -24,17 +31,18 @@ import java.util.Properties;
 public class AndroidApicloudRunAction extends AnAction implements DumbAware {
 
     public AndroidApicloudRunAction() {
-        //super("androidApicloud Run", "点击运行安卓USB同步", ApicloudIcon.AndroidApicloudIcon);
         super("androidApicloud Run", "点击运行安卓USB同步", new ImageIcon(AndroidApicloudRunAction.class.getResource("/com/apicloud/plugin/icons/androidaoicloud.png")));
+        System.out.println("初始化安卓运行按钮");
     }
 
     @Override
     public void actionPerformed(final AnActionEvent event) {
+        Project project = event.getProject();
+        Module module = event.getData(LangDataKeys.MODULE);
         try {
-            PrintUtil.init(event.getProject(), TailRunExecutor.EXECUTOR_ID);
-            PrintUtil.error("开始使用控制台");
+            PrintUtil.error("开始使用控制台", project.getName());
             FileDocumentManager.getInstance().saveAllDocuments();
-            PrintUtil.info("----------->点击安卓运行按钮");
+            PrintUtil.info("----------->点击安卓运行按钮", project.getName());
             Properties properties = System.getProperties();
             String systemPath = properties.getProperty("idea.plugins.path");
             new Thread() {
@@ -42,25 +50,39 @@ public class AndroidApicloudRunAction extends AnAction implements DumbAware {
                 public void run() {
                     try {
                         Thread.sleep(300);
+                        WebStorm webStorm = RunProperties.getWebStorm(project.getName());
                         File tempPath = new File(FileUtil.getTempDirectory().toString() + "/apicloud-intelliJ-plugin");
                         if (!tempPath.exists()) {
                             tempPath = FileUtil.createTempDirectory("apicloud-intelliJ-plugin", null, true);
-                            ApicloudProjectTemplateGenerator.unZip(systemPath + "/ApicloudPlugins/lib/resources.jar", tempPath.getAbsolutePath() + "/", false);
+                            com.apicloud.plugin.util.FileUtil.unZip(systemPath + "/ApicloudPlugins/lib/resources.jar", tempPath.getAbsolutePath() + "/", false);
+                            Thread.sleep(100);
+                            if (webStorm.isMacOS() || webStorm.isLinux()) {
+                                String chx = "chmod +x " + tempPath.getAbsolutePath() + "/tools/adb-ios";
+                                webStorm.runCmd(chx, false);
+                                chx = "chmod +x " + tempPath.getAbsolutePath() + "/tools/adb-linux";
+                                webStorm.runCmd(chx, false);
+                            }
                         }
                         String adbPath = tempPath.getAbsolutePath();
-                        WebStorm.run(adbPath, event.getProject().getBasePath());
-                        Thread.sleep(300);
-                        ConsoleLog.main(tempPath.getAbsolutePath()+"/");
+
+                        String projectPath = event.getProject().getBaseDir().getParent().getPath();
+                        String modulePath = event.getProject().getBasePath();
+                        if (null != module) {
+                            String moduleName = module.getName();
+                            modulePath = projectPath + "/" + moduleName;
+                        }
+                        webStorm.run(adbPath, modulePath);
                     } catch (Exception e) {
                         e.printStackTrace();
-                        PrintUtil.error(e.getMessage());
+                        PrintUtil.error(e.getMessage(), project.getName());
                     }
                 }
             }.start();
 
         } catch (Exception e) {
             e.printStackTrace();
-            PrintUtil.error(e.getMessage());
+            PrintUtil.error(e.getMessage(), project.getName());
         }
     }
+
 }

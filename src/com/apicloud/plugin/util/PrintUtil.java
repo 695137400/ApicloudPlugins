@@ -1,13 +1,9 @@
 package com.apicloud.plugin.util;
 
-import com.apicloud.plugin.tail.TailContentExecutor;
-import com.apicloud.plugin.tail.TailRunExecutor;
-import com.intellij.execution.ExecutorRegistry;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.ide.browsers.OpenUrlHyperlinkInfo;
 import com.intellij.openapi.editor.markup.TextAttributes;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Disposer;
 
 import java.awt.*;
 import java.text.SimpleDateFormat;
@@ -19,45 +15,40 @@ import java.util.Date;
  * @author ob
  */
 public class PrintUtil {
-    public static ConsoleView console = null;
     public static String msg = "";
 
-    public static void init(Project project, String title) {
-        if (null == console) {
-            showLogInConsole(project, TailRunExecutor.EXECUTOR_ID);
-        }
-    }
-
-    private static void showLogInConsole(Project project,String title) {
-        final TailContentExecutor executor = new TailContentExecutor(project);
-        Disposer.register(project, executor);
-        executor.run(title);
-        ExecutorRegistry.getInstance().getRegisteredExecutors();
+    public static void info(String m, String name) {
         if (null != msg && !"".equals(msg)) {
-            info(msg);
-            msg = "";
-        }
-    }
-
-    public static void info(String m) {
-        if (null != msg && !"".equals(msg)) {
-            print(msg + "\n" + m, new Color(102, 207, 239));
+            print(msg + "\n" + m, new Color(102, 207, 239), name);
             msg = "";
         } else {
-            print(m, new Color(102, 207, 239));
+            print(m, new Color(102, 207, 239), name);
         }
     }
 
-    public static void error(String m) {
+    public static void error(String m, String name) {
         if (null != msg && !"".equals(msg)) {
-            print(msg + "\n" + m, Color.red);
+            print(msg + "\n" + m, Color.red, name);
             msg = "";
         } else {
-            print(m, Color.red);
+            print(m, Color.red, name);
         }
     }
 
-    private static void print(String msg, Color color) {
-        console.print(new SimpleDateFormat("YYYY-MM-DD HH:mm:ss").format(new Date()) + "  " + msg + "\n", new ConsoleViewContentType("styleName", new TextAttributes(color, null, null, null, Font.PLAIN)));
+    private static void print(String msg, Color color, String name) {
+        ConsoleView console = RunProperties.console(name);
+        console.print(new SimpleDateFormat("YYYY-MM-dd HH:mm:ss").format(new Date()) + "  " + msg + "\n", new ConsoleViewContentType("styleName", new TextAttributes(new Color(102, 207, 239), null, null, null, Font.PLAIN)));
     }
+
+    public static void printUrl(String msg, String name, String url) {
+        ConsoleView console = RunProperties.console(name);
+        console.print(msg, new ConsoleViewContentType("styleName", new TextAttributes(new Color(102, 207, 239), null, null, null, Font.PLAIN)));
+        console.printHyperlink(url + "\n", new OpenUrlHyperlinkInfo(url));
+    }
+
+    public static void printInfoNoDate(String msg, String name) {
+        ConsoleView console = RunProperties.console(name);
+        console.print(msg + "\n", new ConsoleViewContentType("styleName", new TextAttributes(new Color(102, 207, 239), null, null, null, Font.PLAIN)));
+    }
+
 }

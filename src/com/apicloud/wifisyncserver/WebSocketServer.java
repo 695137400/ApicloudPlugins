@@ -15,7 +15,6 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import org.json.JSONObject;
 
-import java.io.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,22 +28,24 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class WebSocketServer {
 
-    private static Map<Channel, String> map = new ConcurrentHashMap();
-    private static String httpPort = "00";
+    private Map<Channel, String> map = new ConcurrentHashMap();
+    private String httpPort = "8080";
     private Channel ch = null;
+    private String projectName = null;
 
-    public WebSocketServer() {
+    public WebSocketServer(String name) {
+        projectName = name;
     }
 
-    public static Map<Channel, String> getMap() {
+    public Map<Channel, String> getMap() {
         return map;
     }
 
-    public static synchronized String getHttpPort() {
+    public synchronized String getHttpPort() {
         return httpPort;
     }
 
-    public static synchronized void setHttpPort(String port) {
+    public synchronized void setHttpPort(String port) {
         httpPort = port;
     }
 
@@ -60,11 +61,11 @@ public class WebSocketServer {
                     pipeline.addLast("http-codec", new HttpServerCodec());
                     pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
                     ch.pipeline().addLast("http-chunked", new ChunkedWriteHandler());
-                    pipeline.addLast("handler", new WebSocketServerHandler());
+                    pipeline.addLast("handler", new WebSocketServerHandler(projectName));
                 }
             });
             ch = b.bind(port).sync().channel();
-            PrintUtil.info("WiFi 端口更新: " + port);
+            PrintUtil.info("WiFi 端口更新: " + port, projectName);
 
             String laststr = "";
             if (null != ApicloudConstant.WIFI_CONFIG_INFO && "" != ApicloudConstant.WIFI_CONFIG_INFO) {

@@ -269,12 +269,16 @@ public class ApicloudConfigEdit extends JPanel {
                 }
             }
         });
+
+    }
+
+    public void init() {
         new Thread() {
             @Override
             public void run() {
                 try {
                     Thread.sleep(500);
-                    //restoreData();
+                    restoreData();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -541,7 +545,17 @@ public class ApicloudConfigEdit extends JPanel {
     private void restoreData() {
         try {
             ApicloudInfo apicloudInfo = ApicloudXML.readDoc(configPath);
-            PrintUtil.info(JSON.toJSONString(apicloudInfo));
+            apicloudId.setText(apicloudInfo.getAppId());
+            apicloudVersion.setText(apicloudInfo.getVersion());
+            apicloudDescription.setText(apicloudInfo.getAppDescription());
+            apicloudInfo.setAppName(apicloudName.getText());
+            apicloudName.setText(apicloudInfo.getAppName());
+
+
+            apicloudContent.setText(apicloudInfo.getContent());
+            authorName.setText(apicloudInfo.author.getAuthorName());
+            authoEmail.setText(apicloudInfo.author.getEmail());
+            authoHref.setText(apicloudInfo.author.getHref());
         } catch (Exception e) {
             e.printStackTrace();
         }

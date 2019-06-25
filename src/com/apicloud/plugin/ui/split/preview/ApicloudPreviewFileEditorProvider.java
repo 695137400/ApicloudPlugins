@@ -1,4 +1,3 @@
-/*
 package com.apicloud.plugin.ui.split.preview;
 
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -21,13 +20,12 @@ public class ApicloudPreviewFileEditorProvider extends WeighedFileEditorProvider
     @Override
     public FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile file) {
         ApicloudPreviewFileEditor markdownPreviewFileEditor = new ApicloudPreviewFileEditor(file);
-   */
-/*     try {
+     try {
             return ProjectLocator.computeWithPreferredProject(file, project, (ThrowableComputable<FileEditor, Throwable>) () -> markdownPreviewFileEditor);
         } catch (Throwable throwable) {
             throwable.printStackTrace();
         }
-*//*
+
 
         return markdownPreviewFileEditor;
     }
@@ -44,4 +42,3 @@ public class ApicloudPreviewFileEditorProvider extends WeighedFileEditorProvider
         return FileEditorPolicy.PLACE_AFTER_DEFAULT_EDITOR;
     }
 }
-*/

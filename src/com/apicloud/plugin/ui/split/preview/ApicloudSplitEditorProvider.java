@@ -1,4 +1,3 @@
-/*
 package com.apicloud.plugin.ui.split.preview;
 
 import com.apicloud.plugin.ui.split.edit.SplitTextEditorProvider;
@@ -20,4 +19,3 @@ public class ApicloudSplitEditorProvider extends SplitTextEditorProvider {
         return new ApicloudSplitEditor(((TextEditor) firstEditor), ((ApicloudPreviewFileEditor) secondEditor));
     }
 }
-*/

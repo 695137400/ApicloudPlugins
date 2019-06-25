@@ -1,7 +1,16 @@
 package com.apicloud.plugin.tail;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.apicloud.console.log.ConsoleLog;
+import com.apicloud.plugin.run.WebStorm;
+import com.apicloud.plugin.util.HttpClientUtil;
 import com.apicloud.plugin.util.PrintUtil;
-import com.intellij.execution.*;
+import com.apicloud.plugin.util.RunProperties;
+import com.intellij.execution.DefaultExecutionResult;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.filters.Filter;
@@ -10,21 +19,23 @@ import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.RunContentDescriptor;
-import com.intellij.execution.ui.RunContentManager;
 import com.intellij.execution.ui.RunnerLayoutUi;
 import com.intellij.execution.ui.layout.PlaceInGrid;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +47,27 @@ public class TailContentExecutor implements Disposable {
     public TailContentExecutor(@NotNull Project project) {
         myProject = project;
         consoleView = createConsole(project);
-        PrintUtil.console = consoleView;
+        RunProperties.console(project.getName(), consoleView);
+        System.out.println("consoleView++++++++++");
+        WebStorm webStorm = RunProperties.getWebStorm(project.getName());
+        File tempPath = new File(FileUtil.getTempDirectory().toString() + "/apicloud-intelliJ-plugin");
+        if (tempPath.exists()) {
+            String adbPath = tempPath.getAbsolutePath();
+            new Thread() {
+                @Override
+                public void run() {
+                    while (true) {
+                        try {
+                            wifiAdb(webStorm, project, adbPath);
+                            Thread.sleep(1500);
+                        } catch (InterruptedException e) {
+
+                        }
+                    }
+                }
+            }.start();
+
+        }
     }
 
     private ConsoleView createConsole(@NotNull Project project) {
@@ -46,9 +77,7 @@ public class TailContentExecutor implements Disposable {
         return console;
     }
 
-    public void run(String title) {
-        FileDocumentManager.getInstance().saveAllDocuments();
-        Executor executor = ExecutorRegistry.getInstance().getExecutorById(title);
+    public void run(ToolWindow toolWindow) {
         DefaultActionGroup actions = new DefaultActionGroup();
 
         // Create runner UI layout
@@ -85,8 +114,10 @@ public class TailContentExecutor implements Disposable {
         for (AnAction action : consoleView.createConsoleActions()) {
             actions.add(action);
         }
-        RunContentManager rum = ExecutionManager.getInstance(myProject).getContentManager();
-        rum .showRunContent(executor, descriptor);
+        ContentManager contentManager = toolWindow.getContentManager();
+
+        contentManager.addContent(content);
+        contentManager.setSelectedContent(content);
     }
 
     private static JComponent createConsolePanel(ConsoleView view, ActionGroup actions) {
@@ -106,4 +137,134 @@ public class TailContentExecutor implements Disposable {
     public void dispose() {
         Disposer.dispose(this);
     }
+
+    private void adbTools(WebStorm webStorm, Project project, String adbPath, String device) {
+        String remote = "";
+        String remotes[] = null;
+        Object o = null;
+        try {
+            o = webStorm.runCmd(adbPath + "/tools/" + webStorm.osADB() + " -s " + device + " shell cat /proc/net/unix |grep -a devtools_remote", false);
+        } catch (Exception e) {
+
+        }
+        if (null != o) {
+            remote = o.toString();
+            remotes = remote.split("0000000000000000");
+            remote = remotes[remotes.length - 1].substring(remotes[remotes.length - 1].indexOf("@") + 1);
+        }
+        if (null != remote || !"".equals(remote)) {
+            try {
+                o = webStorm.runCmd(adbPath + "/tools/" + webStorm.osADB() + " -s " + device + "  forward tcp:9888 localabstract:" + remote, false);
+                String s = HttpClientUtil.sendGet("http://localhost:9888/json", "v=1");
+                if (null != s && !"".equals(s)) {
+                    JSONArray array = (JSONArray) JSON.parse(s);
+                    PrintUtil.info("USB同步完成，您可以将以下地址粘贴到谷歌浏览器进行手机调试", project.getName());
+                    String urls = "";
+                    if (null != array) {
+                        for (int i = 0; i < array.size(); i++) {
+                            JSONObject jo = (JSONObject) array.get(i);
+                            RunProperties.adbWifi(device + jo.getString("id"), "1");
+                            PrintUtil.info("\n名称：" + jo.getString("title"), project.getName());
+                            PrintUtil.printUrl("url：", project.getName(), "chrome-devtools://devtools/bundled/inspector.html?ws=localhost:9888/devtools/page/" + jo.getString("id"));
+                            PrintUtil.printInfoNoDate("说明： " + jo.getString("url"), project.getName());
+
+                        }
+                        PrintUtil.info(urls + "\n", project.getName());
+                        Thread runnable = new Thread() {
+                            public void run() {
+                                ConsoleLog consoleLog = RunProperties.getConsoleLog(project.getName());
+                                consoleLog.main(adbPath + "/", device);
+                            }
+                        };
+                        runnable.start();
+                    }
+                }
+            } catch (Exception e) {
+
+            }
+        }
+    }
+
+    private void wifiAdb(WebStorm webStorm, final Project project, final String adbPath) {
+        Object adbwwifi = null;
+        try {
+            String adbList[] = new String[0];
+            try {
+                adbwwifi = webStorm.runCmd(adbPath + "/tools/" + webStorm.osADB() + " devices", false);
+                System.out.println(adbwwifi);
+                adbList = adbwwifi.toString().split("\n");
+            } catch (Exception e) {
+
+            }
+            if (null != adbList && adbList.length > 0) {
+                for (int i = 1; i < adbList.length; i++) {
+                    final String adbDevices = adbList[i];
+                    if (null != adbDevices && !"".equals(adbDevices)) {
+                        String[] adb = adbDevices.split("\t");
+                        String name = adb[0];
+                        String status = adb[1];
+                        if (name.split("\\.").length > 2) {// ip
+                            RunProperties.adbIp(name, status);
+                            String s = null;
+                            try {
+                                s = HttpClientUtil.sendGet("http://localhost:9888/json", "v=1");
+                            } catch (Exception e) {
+
+                            }
+                            if (null == s || "".equals(s)) {
+                                adbTools(webStorm, project, adbPath, name);
+                            } else {
+                                JSONArray array = (JSONArray) JSON.parse(s);
+                                String urls = "";
+                                if (null != array) {
+                                    boolean isnew = false;
+                                    for (int y = 0; y < array.size(); y++) {
+                                        JSONObject jo = (JSONObject) array.get(y);
+                                        if (null == RunProperties.adbWifi(name + jo.getString("id"))) {
+                                            if (!isnew) {
+                                                PrintUtil.info("\n调试地址更新：" + urls + "\n", project.getName());
+                                                isnew = true;
+                                            }
+                                            RunProperties.adbWifi(name + jo.getString("id"), "1");
+                                            PrintUtil.info("\n名称：" + jo.getString("title"), project.getName());
+                                            PrintUtil.printUrl("url：", project.getName(), "chrome-devtools://devtools/bundled/inspector.html?ws=localhost:9888/devtools/page/" + jo.getString("id"));
+                                            PrintUtil.printInfoNoDate("说明： " + jo.getString("url"), project.getName());
+                                        }
+                                    }
+                                }
+                            }
+                        } else {//编号
+                            RunProperties.adbDevices(name, status);
+                            if ("device".equals(status) || (null != RunProperties.adbDevices(name) && !"device".equals(RunProperties.adbDevices(name)))) {
+                                try {
+                                    webStorm.runCmd(adbPath + "/tools/" + webStorm.osADB() + " tcpip 8888", false);
+                                    ArrayList<String> ips = RunProperties.getIP();
+                                    if (ips.size() > 0) {
+                                        for (int p = 0; p < ips.size(); p++) {
+                                            try {
+                                                String ipstatus = RunProperties.adbIp(ips.get(p));
+                                                if (null == ipstatus || (null != ipstatus && !"device".equals(ipstatus))) {
+                                                    webStorm.runCmd(adbPath + "/tools/" + webStorm.osADB() + " connect " + ips.get(p) + ":8888", false);
+                                                    RunProperties.adbIp(ips.get(p), "1");
+                                                    PrintUtil.error("检测到有已链接的USB设备，开启可用 WIFI ADB 无线调试，您现在可以断开USB数据链接，打开谷歌浏览器进行方便的无线调试", project.getName());
+                                                    adbTools(webStorm, project, adbPath, name);
+                                                }
+                                            } catch (Exception e) {
+                                            }
+                                        }
+                                    }
+                                } catch (Exception e) {
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+
+        }
+
+    }
+
 }

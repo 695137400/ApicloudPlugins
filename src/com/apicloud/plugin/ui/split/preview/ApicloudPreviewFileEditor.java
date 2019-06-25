@@ -1,4 +1,3 @@
-/*
 package com.apicloud.plugin.ui.split.preview;
 
 import com.apicloud.plugin.ui.ApicloudConfigEdit;
@@ -19,7 +18,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 
-*/
 /**
  * Created with IntelliJ IDEA.<br/>
  * User: lizhichao<br/>
@@ -27,7 +25,7 @@ import java.beans.PropertyChangeListener;
  * Time: 12:57:09<br/>
  * Author:lizhichao<br/>
  * Description: <span style="color:#63D3E9"></span><br/>
- *//*
+ */
 
 public class ApicloudPreviewFileEditor extends UserDataHolderBase implements FileEditor {
 
@@ -41,7 +39,10 @@ public class ApicloudPreviewFileEditor extends UserDataHolderBase implements Fil
     public ApicloudPreviewFileEditor(@NotNull VirtualFile file) {
 //布局
         System.out.println("-------------------2");
-        JScrollPane text2 = new JScrollPane(new ApicloudConfigEdit().getContentPane());
+        ApicloudConfigEdit cfgEdit = new ApicloudConfigEdit();
+        cfgEdit.setConfigPath(file.getPath());
+        cfgEdit.init();
+        JScrollPane text2 = new JScrollPane(cfgEdit.getContentPane());
 
         JPanel j1 = new JPanel();
         GridConstraints deleteConstraints = new GridConstraints();
@@ -140,4 +141,3 @@ public class ApicloudPreviewFileEditor extends UserDataHolderBase implements Fil
 
     }
 }
-*/

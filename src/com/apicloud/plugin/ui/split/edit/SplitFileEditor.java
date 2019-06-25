@@ -1,4 +1,3 @@
-/*
 package com.apicloud.plugin.ui.split.edit;
 
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
@@ -209,4 +208,3 @@ public abstract class SplitFileEditor<E1 extends FileEditor, E2 extends FileEdit
 
 
 }
-*/

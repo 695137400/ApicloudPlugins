@@ -1,4 +1,3 @@
-/*
 package com.apicloud.plugin.ui.split.edit;
 
 import com.intellij.openapi.fileEditor.*;
@@ -135,4 +134,3 @@ public abstract class SplitTextEditorProvider implements AsyncFileEditorProvider
         }
     }
 }
-*/

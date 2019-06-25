@@ -1,5 +1,5 @@
 <idea-plugin>
-    <version>3.10</version>
+    <version>3.15</version>
     <idea-version since-build="107.121"/>
     <id>com.apicloud.plugin</id><!--插件唯一标识-->
     <name>Apicloud Plugin</name><!--插件显示名称-->
@@ -13,6 +13,9 @@
                     <p>one version posted in<a href="https://community.apicloud.com/bbs/thread-79331-1-1.html">Apicloud</a></p>
                     <p>控制台代码参考<a href="https://github.com/kookob/mybatis-log-plugin">mybatis-log-plugin</a>如果有侵犯原作者版权的地方，请联系本人销毁</p>
                     <p>the console code reference<a href="https://github.com/kookob/mybatis-log-plugin">mybatis-log-plugin</a></p>
+                    <p>IDEA支持同一个Project下创建多个Module，这个时候你可以选中其中一个Module的根目录或者这个Module中的任意一个文件来运行USB或者WIFI</p>
+                    <p>控制台可以看到很多日志，在您开启WIFI之后，第一次链接USB的时候会开启USB调试，如果控制台打印出日志（例如：chrome-devtools://devtools/bundled/inspector.html?ws=***），这个时候您可以拔掉USB直接使用无线调试，</p>
+                    <p>调试也非常简单，直接把地址拷贝，粘贴到谷歌浏览器的地址栏，然后回车就可以，加入您不会使用Chrome DevTools ，还是建议您去学习这方面的知识</p>
                     <div>
                         本插件目前实现功能：<br>
                         Functional description：
@@ -35,49 +38,49 @@
         ]]></description><!--描述-->
     <change-notes><![CDATA[
                        <ul>
-                        <li>修改同一个目录下面多个工程时使用WIFI发布会错乱(仅存在多个工程相同的ID的情况，如果ID不一样则没问题)</li>
-                        <li>Using WIFI to release will be in disorder when modifying multiple projects under the same catalog(only if multiple projects have the same ID, it is ok if the ID is different)  </li>
-                        <li>修改日志打印，添加日志输出时间显示</li>
-                        <li>Modify log print and add log output time display </li>
-                        <li>修改其它稳定性</li>
-                        <li>Modify other stability </li>
-                        <li>最新代码已经提交github，欢迎下载</li>
-                        <li>The latest code has been submitted to github, welcome to download</li>
-                         <li>修改上一个版本中偶现WIFI不能运行，xml文件打开失败</li>
-                         <li>Changes on a version of incidental WIFI can not run</li>
-                         <li>重置多终端端口占用规则，支持多工具打开多个端口</li>
-                         <li>Reset the terminal port occupy more rules, support multiple tools to open multiple ports</li>
+                        <li>IDEA支持创建多个项目</li>
+                        <li>Create multiple projects</li>
+                        <li>新增WIFI调试</li>
+                        <li>WIFI Debug</li>
+                        <li>适配三大主流操作系统的adb（window,linux,mac）</li>
+                        <li>adapter adb</li>
                     </ul>
 ]]></change-notes>
     <!--<depends>com.intellij.modules.lang</depends>&lt;!&ndash;&ndash;&gt;-->
     <depends>com.intellij.modules.platform</depends>
     <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Apicloud Log" anchor="bottom" icon="/com/apicloud/plugin/icons/apicloud.png" factoryClass="com.apicloud.plugin.tail.TailRunExecutor"/>
         <projectTemplatesFactory implementation="com.apicloud.plugin.Project.ApicloudTemplateFactory"/><!--兼容IDEA-->
         <directoryProjectGenerator implementation="com.apicloud.plugin.Project.ApicloudProjectTemplateGenerator"/><!--兼容WebStorm-->
-        <executor implementation="com.apicloud.plugin.tail.TailRunExecutor" id="ApicloudLogTail"/>
         <search.topHitProvider implementation="com.apicloud.plugin.ApicloudOptionsTopHitProvider"/>
-        <!-- <fileEditorProvider implementation="com.apicloud.plugin.ui.split.preview.ApicloudSplitEditorProvider"/>-->
+
+
+
+         <fileEditorProvider implementation="com.apicloud.plugin.ui.split.preview.ApicloudSplitEditorProvider"/>
     </extensions>
-    <!--  <application-components>
+      <application-components>
           <component>
               <implementation-class>com.apicloud.plugin.ui.ApicloudConfigEdit</implementation-class>
           </component>
-      </application-components>-->
+      </application-components>
     <actions>
         <action id="ApicloudRunAction" class="com.apicloud.plugin.run.AndroidApicloudRunAction">
-            <add-to-group group-id="RunnerActions" anchor="after" relative-to-action="RefactoringMenu"/><!--添加运行按钮-->
+            <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="MainMenu"/><!--添加运行按钮-->
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
         <action id="IOSRunAction" class="com.apicloud.plugin.run.IosApicloudRunAction">
-            <add-to-group group-id="RunnerActions" anchor="after" relative-to-action="RefactoringMenu"/><!--添加运行按钮-->
+            <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="MainMenu"/><!--添加运行按钮-->
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
         <action id="WifiServiceAction" class="com.apicloud.plugin.run.WifiApicloudRunAction">
-            <add-to-group group-id="RunnerActions" anchor="after" relative-to-action="RefactoringMenu"/><!--添加运行按钮-->
+            <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="MainMenu"/><!--添加运行按钮-->
         </action>
         <action id="PushRunAction" class="com.apicloud.plugin.run.PushRunAction">
-            <add-to-group group-id="RunnerActions" anchor="after" relative-to-action="RefactoringMenu"/><!--添加运行按钮-->
+            <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="MainMenu"/><!--添加运行按钮-->
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
-        <!--  <group id="Markdown.Toolbar.Left" class="com.intellij.openapi.actionSystem.DefaultActionGroup" text="Markdown editor actions"/>
-          <group id="Markdown.Toolbar.Right" class="com.intellij.openapi.actionSystem.DefaultActionGroup" text="Markdown editor layout actions"/>-->
+          <group id="Markdown.Toolbar.Left" class="com.intellij.openapi.actionSystem.DefaultActionGroup" text="Markdown editor actions"/>
+          <group id="Markdown.Toolbar.Right" class="com.intellij.openapi.actionSystem.DefaultActionGroup" text="Markdown editor layout actions"/>
     </actions>
 
 </idea-plugin>

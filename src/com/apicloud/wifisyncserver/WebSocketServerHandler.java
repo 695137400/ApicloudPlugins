@@ -1,7 +1,11 @@
 package com.apicloud.wifisyncserver;
 
 import com.apicloud.commons.model.Config;
+import com.apicloud.plugin.ApicloudOptionsTopHitProvider;
+import com.apicloud.plugin.run.WifiApicloudRunAction;
 import com.apicloud.plugin.util.PrintUtil;
+import com.apicloud.plugin.util.RunProperties;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -36,8 +40,15 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
 
     private static final Logger logger = Logger.getLogger(WebSocketServerHandler.class.getName());
     private WebSocketServerHandshaker handshaker;
+    private WifiSyncServer wifiSyncServer = null;
+    private String projectName = null;
 
-    public WebSocketServerHandler() {
+    private WebSocketServer webSocketServer = null;
+
+    public WebSocketServerHandler(String name) {
+        this.projectName = name;
+        wifiSyncServer = RunProperties.getWifiSyncServer(name);
+        webSocketServer = RunProperties.getWebSocketServer(name);
     }
 
     public void messageReceived(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -61,10 +72,11 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
                 WebSocketServerHandshakerFactory.sendUnsupportedWebSocketVersionResponse(ctx.channel());
             } else {
                 String ip = getIPString(ctx);
-                PrintUtil.info("新链接手机IP：" + ip);
-                WebSocketServer.getMap().put(ctx.channel(), ip);
+                PrintUtil.info("新链接手机IP：" + ip, projectName);
+                webSocketServer.getMap().put(ctx.channel(), ip);
+                RunProperties.addIp(ip);
                 this.handshaker.handshake(ctx.channel(), req);
-                ctx.channel().write(new TextWebSocketFrame("{\"command\":\"7\",\"port\":\"" + WebSocketServer.getHttpPort() + "\"}"));
+                ctx.channel().write(new TextWebSocketFrame("{\"command\":\"7\",\"port\":\"" + webSocketServer.getHttpPort() + "\"}"));
             }
 
         } else {
@@ -74,7 +86,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
 
     private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) {
         if (frame instanceof CloseWebSocketFrame) {
-            WebSocketServer.getMap().remove(ctx.channel());
+            webSocketServer.getMap().remove(ctx.channel());
             this.handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
         } else if (frame instanceof PingWebSocketFrame) {
             ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
@@ -103,15 +115,15 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
                         debugLevel = json.getString("level");
                         String content = json.getString("content");
                         if (debugLevel.equals("normal")) {
-                            PrintUtil.info("[WiFi log] " + content);
+                            PrintUtil.info("[WiFi log] " + content, projectName);
                         } else if (debugLevel.equals("error")) {
-                            PrintUtil.info("[WiFi error] " + content);
+                            PrintUtil.info("[WiFi error] " + content, projectName);
                         } else if (debugLevel.equals("warn")) {
-                            PrintUtil.info("[WiFi warning] " + content);
+                            PrintUtil.info("[WiFi warning] " + content, projectName);
                         } else if (debugLevel.equals("debug")) {
-                            PrintUtil.info("[WiFi debug] " + content);
+                            PrintUtil.info("[WiFi debug] " + content, projectName);
                         } else {
-                            PrintUtil.info("[WiFi info] " + content);
+                            PrintUtil.info("[WiFi info] " + content, projectName);
                         }
 
                         return;
@@ -126,7 +138,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             }
 
             if (appID != null) {
-                debugLevel = WifiSyncServer.getWorkspacePath();
+                debugLevel = wifiSyncServer.getWorkspacePath();
                 if (!debugLevel.endsWith(File.separator)) {
                     debugLevel = debugLevel + File.separator;
                 }
@@ -145,9 +157,20 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
                 File fileList;
                 for (int var14 = 0; var14 < size; ++var14) {
                     fileList = var16[var14];
-                    if (fileList.isDirectory()) {
-                        String path = "";
-
+                    String id = "";
+                    String path = "";
+                    if (fileList.isFile()) {
+                        if ("config.xml".equals(fileList.getName())) {
+                            Config config = null;
+                            try {
+                                config = Config.loadXml(new FileInputStream(fileList));
+                                id = config.getId();
+                                path = fileList.getParent();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } else  if (fileList.isDirectory()) {
                         try {
                             path = fileList.getCanonicalPath();
                         } catch (IOException var25) {
@@ -155,7 +178,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
                         }
 
                         path.replaceAll("\\\\", "/");
-                        String id = "";
+
                         File fileToRead = new File(path + File.separator + "config.xml");
 
                         try {
@@ -164,16 +187,16 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
                         } catch (FileNotFoundException var24) {
                             var24.printStackTrace();
                         }
+                    }
 
-                        if (id.equals(appID)) {
-                            destPrjPath = path;
-                            break;
-                        }
+                    if (id.equals(appID)) {
+                        destPrjPath = path;
+                        break;
                     }
                 }
 
                 if (destPrjPath != null) {
-                    fileList = new File(FileUtil.getTempDirectory()+ File.separator + appID + "_filelist.txt");
+                    fileList = new File(FileUtil.getTempDirectory() + File.separator + appID + "_filelist.txt");
                     ArrayList<String> syncfilelist = new ArrayList();
                     String strJsonFormatted;
                     if (!fileList.exists()) {
@@ -201,14 +224,14 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
 
                     this.searchNewlyModifiedFiles(destPrjPath, newModifiedFileList, timeStamp, appID, syncfilelist);
                     size = newModifiedFileList.size();
-                    PrintUtil.error("本次更新文件    "+size+"    个");
+                    PrintUtil.error("本次更新文件    " + size + "    个", projectName);
                     strJsonFormatted = "[";
                     if (size > 0) {
                         for (int i = 0; i < size - 1; ++i) {
                             strJsonFormatted = strJsonFormatted + "\"" + newModifiedFileList.get(i) + "\"" + ",";
                         }
 
-                        strJsonFormatted = strJsonFormatted + "\"" +newModifiedFileList.get(size - 1) + "\"";
+                        strJsonFormatted = strJsonFormatted + "\"" + newModifiedFileList.get(size - 1) + "\"";
                     }
 
                     strJsonFormatted = strJsonFormatted + "]";
@@ -272,7 +295,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
                         this.searchNewlyModifiedFiles(f.getAbsolutePath(), list, timestamp, appId, historyList);
                     } else {
                         String absolutePath = f.getAbsolutePath();
-                        String workspaceDir = WifiSyncServer.getWorkspacePath();
+                        String workspaceDir = wifiSyncServer.getWorkspacePath();
                         //PrintUtil.info("absolutePath = " + absolutePath);
                         String relativePath;
                         if (!workspaceDir.endsWith("/") && !workspaceDir.endsWith("\\")) {
@@ -288,7 +311,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
                         if (historyList.size() <= 0) {
                             historyList.add(finalString);
                             list.add(finalString);
-                            PrintUtil.info("更新----->"+finalString);
+                            PrintUtil.info("更新----->" + finalString, projectName);
                         } else {
                             boolean synced = false;
                             Iterator var20 = historyList.iterator();
@@ -304,13 +327,13 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
                             if (!synced) {
                                 historyList.add(finalString);
                                 list.add(finalString);
-                                PrintUtil.info("更新----->"+finalString);
+                                PrintUtil.info("更新----->" + finalString, projectName);
                             } else {
                                 long fileModifyDate = f.lastModified();
                                 long userTimeStamp = Long.valueOf(timestamp.replaceAll("[^0-9\\.]", ""));
                                 if (fileModifyDate > userTimeStamp) {
                                     list.add(finalString);
-                                    PrintUtil.info("更新----->"+finalString);
+                                    PrintUtil.info("更新----->" + finalString, projectName);
                                 }
                             }
                         }
@@ -319,7 +342,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             }
 
         } else {
-            PrintUtil.info("Error:search " + dir + " failed, folder not exist!");
+            PrintUtil.info("Error:search " + dir + " failed, folder not exist!", projectName);
         }
     }
 

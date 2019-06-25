@@ -6,8 +6,10 @@ import com.apicloud.plugin.util.ApicloudConstant;
 import com.apicloud.plugin.util.PrintUtil;
 import org.json.JSONObject;
 
-import java.io.*;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.Socket;
+import java.net.SocketException;
 import java.util.Enumeration;
 import java.util.Random;
 
@@ -21,28 +23,30 @@ import java.util.Random;
  */
 public class WifiSyncServer {
 
-    private static String workspacePath;
-    private static int httpport = 8080;
-    private static int websocketport = 10915;
-    static ApicloudRun httpServer = null;
-    static ApicloudRun websocketServer = null;
-    private static WebSocketServer socketServer = null;
-    private static HttpFileServer fileServer = null;
-    private static ApicloudRun http_runnable = null;
-    private static ApicloudRun websocket_runnable = null;
+    private String workspacePath;
+    private int httpport = 8080;
+    private int websocketport = 10915;
+    ApicloudRun httpServer = null;
+    ApicloudRun websocketServer = null;
+    private WebSocketServer socketServer = null;
+    private HttpFileServer fileServer = null;
+    private ApicloudRun http_runnable = null;
+    private ApicloudRun websocket_runnable = null;
+    private String projectName = null;
 
-    public WifiSyncServer() {
+    public WifiSyncServer(String name) {
+        this.projectName = name;
     }
 
-    public static String getWorkspacePath() {
+    public String getWorkspacePath() {
         return workspacePath;
     }
 
-    public static void setWorkspacePath(String path) {
+    public void setWorkspacePath(String path) {
         workspacePath = path;
     }
 
-    public static String getLocalIP() {
+    public String getLocalIP() {
         StringBuilder sb = new StringBuilder();
 
         try {
@@ -66,12 +70,12 @@ public class WifiSyncServer {
         return sb.toString();
     }
 
-    public static void run(String[] args) throws Exception {
+    public void run(String[] args) throws Exception {
         if (args.length > 1) {
             setWorkspacePath(args[0]);
             System.setProperty("java.net.preferIPv4Stack", "true");
             String stop = args[1];
-            PrintUtil.info(JSON.toJSONString(args));
+            PrintUtil.info(JSON.toJSONString(args), projectName);
             String laststr = "";
             if (null != ApicloudConstant.WIFI_CONFIG_INFO && "" != ApicloudConstant.WIFI_CONFIG_INFO) {
                 laststr = ApicloudConstant.WIFI_CONFIG_INFO;
@@ -88,11 +92,13 @@ public class WifiSyncServer {
                     while (true) {
                         try {
                             fileServer = null;
-                            fileServer = new HttpFileServer();
+                            fileServer = new HttpFileServer(projectName);
                             if (isPortUsing("127.0.0.1", httpport)) {
                                 httpport += (new Random()).nextInt(10000);
                             } else {
                                 fileServer.run(httpport, url);
+                                jsonObject.put("http_port", httpport);
+                                ApicloudConstant.WIFI_CONFIG_INFO = jsonObject.toString();
                                 break;
                             }
                         } catch (Exception var4) {
@@ -104,9 +110,15 @@ public class WifiSyncServer {
                 }
             };
             if (httpServer != null) {
-                fileServer.stop();
-                http_runnable.stop();
-                httpServer.stop();
+                if (null != fileServer) {
+                    fileServer.stop();
+                }
+                if (null != http_runnable) {
+                    http_runnable.stop();
+                }
+                if (null != httpServer) {
+                    httpServer.stop();
+                }
                 fileServer = null;
                 http_runnable = null;
                 httpServer = null;
@@ -124,14 +136,16 @@ public class WifiSyncServer {
                     while (true) {
                         try {
                             socketServer = null;
-                            socketServer = new WebSocketServer();
+                            socketServer = new WebSocketServer(projectName);
                             if (isPortUsing("127.0.0.1", websocketport)) {
                                 websocketport += (new Random()).nextInt(10000);
                             } else {
                                 socketServer.run(websocketport);
+                                jsonObject.put("http_port", httpport);
+                                ApicloudConstant.WIFI_CONFIG_INFO = jsonObject.toString();
                                 break;
                             }
-                        }  catch (Exception var3) {
+                        } catch (Exception var3) {
                             var3.printStackTrace();
                             break;
                         }
@@ -139,9 +153,15 @@ public class WifiSyncServer {
                 }
             };
             if (websocketServer != null) {
-                socketServer.stop();
-                websocket_runnable.stop();
-                websocketServer.stop();
+                if (null != socketServer) {
+                    socketServer.stop();
+                }
+                if (null != websocket_runnable) {
+                    websocket_runnable.stop();
+                }
+                if (null != websocketServer) {
+                    websocketServer.stop();
+                }
                 socketServer = null;
                 websocket_runnable = null;
                 websocketServer = null;
@@ -153,24 +173,17 @@ public class WifiSyncServer {
         }
     }
 
-    public static boolean isPortUsing(String host, int port) throws Exception {
+    private boolean isPortUsing(String host, int port) throws Exception {
         boolean flag = false;
         InetAddress theAddress = InetAddress.getByName(host);
         try {
             Socket socket = new Socket(theAddress, port);
             flag = true;
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         return flag;
     }
 
-    public static void main(String[] args) {
-        try {
-            System.out.println(isPortUsing("127.0.0.1", 8081));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
 }

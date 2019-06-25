@@ -2,6 +2,8 @@ package com.apicloud.wifisyncserver;
 
 import com.apicloud.commons.model.Config;
 import com.apicloud.plugin.util.PrintUtil;
+import com.apicloud.plugin.util.RunProperties;
+import com.intellij.openapi.project.Project;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -30,9 +32,15 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
     private final String url;
     private static final Pattern INSECURE_URI = Pattern.compile(".*[<>&\"].*");
     private static final Pattern ALLOWED_FILE_NAME = Pattern.compile("[A-Za-z0-9][-_A-Za-z0-9\\.]*");
+    private String projectName;
+    private WifiSyncServer wifiSyncServer = null;
+    private WebSocketServer webSocketServer = null;
 
-    public HttpFileServerHandler(String url) {
+    public HttpFileServerHandler(String url, String name) {
         this.url = url;
+        this.projectName = name;
+        wifiSyncServer = RunProperties.getWifiSyncServer(name);
+        webSocketServer = RunProperties.getWebSocketServer(name);
     }
 
     public void messageReceived(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
@@ -132,7 +140,7 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
                 appID = uri.substring(queryMarkIndex + 1);
                 if (appID.indexOf("&") == -1) {
                     if (appID.equalsIgnoreCase("action=ip")) {
-                        ipStrings = WifiSyncServer.getLocalIP();
+                        ipStrings = wifiSyncServer.getLocalIP();
                         if (ipStrings.endsWith(",")) {
                             FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.copiedBuffer(ipStrings.substring(0, ipStrings.length() - 1) + ":" + HttpFileServer.getWebsocketPort() + "\r\n", CharsetUtil.UTF_8));
                             response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8");
@@ -149,18 +157,18 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
                     Channel channel;
                     if (values[0].equalsIgnoreCase("action=sync") && values[1].startsWith("appid=")) {
                         fileurl = values[1].substring(6);
-                        PrintUtil.info("[action=sync]appid = " + fileurl);
-                        map = WebSocketServer.getMap();
+                        PrintUtil.info("[action=sync]appid = " + fileurl, projectName);
+                        map = webSocketServer.getMap();
                         if (map.size() < 1) {
-                            PrintUtil.error("Error:没有手机连接到WiFi同步服务.\n请先到apploader或自定义loader中配置WiFi同步参数。");
+                            PrintUtil.error("Error:没有手机连接到WiFi同步服务.\n请先到apploader或自定义loader中配置WiFi同步参数。", projectName);
                             return "noop";
                         }
 
                         var9 = map.entrySet().iterator();
 
-                        while(var9.hasNext()) {
-                            e = (Map.Entry)var9.next();
-                            channel = (Channel)e.getKey();
+                        while (var9.hasNext()) {
+                            e = (Map.Entry) var9.next();
+                            channel = (Channel) e.getKey();
                             channel.writeAndFlush(new TextWebSocketFrame("{\"command\":\"1\",\"appid\":\"" + fileurl + "\",\"updateAll\":false" + "}"));
                         }
 
@@ -170,13 +178,13 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
                     if (values[0].equalsIgnoreCase("action=review") && values[1].startsWith("path=")) {
                         fileurl = values[1].substring(5);
                         fileurl = fileurl.substring(1, fileurl.length() - 1);
-                        PrintUtil.info("[action=review]path = " + fileurl);
+                        PrintUtil.info("[action=review]path = " + fileurl, projectName);
                         if (!fileurl.endsWith("htm") && !fileurl.endsWith("html")) {
                             return "noop";
                         }
 
                         fileurl = fileurl.replaceAll("\\\\", "/");
-                        String parentPath = WifiSyncServer.getWorkspacePath();
+                        String parentPath = wifiSyncServer.getWorkspacePath();
                         parentPath = parentPath.replaceAll("\\\\", "/");
                         if (parentPath.endsWith("/")) {
                             parentPath = parentPath.substring(0, parentPath.length() - 1);
@@ -192,7 +200,7 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
                         File[] var14 = files;
                         int var13 = files.length;
 
-                        for(int var12 = 0; var12 < var13; ++var12) {
+                        for (int var12 = 0; var12 < var13; ++var12) {
                             File f = var14[var12];
                             if (f.isDirectory()) {
                                 String path = "";
@@ -223,16 +231,16 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
                             }
 
                             result = "/" + id + fileurl.substring(destPrjPath.length());
-                            Map<Channel, String> map2 = WebSocketServer.getMap();
+                            Map<Channel, String> map2 = webSocketServer.getMap();
                             if (map2.size() < 1) {
-                                PrintUtil.error("Error:没有手机连接到WiFi同步服务.\n请先到apploader或自定义loader中配置WiFi同步参数。");
+                                PrintUtil.error("Error:没有手机连接到WiFi同步服务.\n请先到apploader或自定义loader中配置WiFi同步参数。", projectName);
                                 return "noop";
                             }
 
                             Iterator var16 = map2.entrySet().iterator();
-                            while(var16.hasNext()) {
-                                e = (Map.Entry)var16.next();
-                                channel = (Channel)e.getKey();
+                            while (var16.hasNext()) {
+                                e = (Map.Entry) var16.next();
+                                channel = (Channel) e.getKey();
                                 channel.writeAndFlush(new TextWebSocketFrame("{\"command\":\"6\",\"path\":\"" + result + "\",\"appid\":\"" + id + "\"}"));
                             }
 
@@ -242,25 +250,25 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
                         if (values[0].equalsIgnoreCase("action=workspace") && values[1].startsWith("path=")) {
                             fileurl = values[1].substring(5);
                             fileurl = fileurl.substring(1, fileurl.length() - 1);
-                            PrintUtil.info("[action=workspace]path = " + fileurl);
-                            WifiSyncServer.setWorkspacePath(fileurl);
+                            PrintUtil.info("[action=workspace]path = " + fileurl, projectName);
+                            wifiSyncServer.setWorkspacePath(fileurl);
                             return "noop";
                         }
 
                         if (values[0].equalsIgnoreCase("action=syncall") && values[1].startsWith("appid=")) {
                             fileurl = values[1].substring(6);
-                            PrintUtil.info("[action=syncall]appid = " + fileurl);
-                            map = WebSocketServer.getMap();
+                            PrintUtil.info("[action=syncall]appid = " + fileurl, projectName);
+                            map = webSocketServer.getMap();
                             if (map.size() < 1) {
-                                PrintUtil.error("Error:没有手机连接到WiFi同步服务.\n请先到apploader或自定义loader中配置WiFi同步参数。");
+                                PrintUtil.error("Error:没有手机连接到WiFi同步服务.\n请先到apploader或自定义loader中配置WiFi同步参数。", projectName);
                                 return "noop";
                             }
 
                             var9 = map.entrySet().iterator();
 
-                            while(var9.hasNext()) {
-                                e = (Map.Entry)var9.next();
-                                channel = (Channel)e.getKey();
+                            while (var9.hasNext()) {
+                                e = (Map.Entry) var9.next();
+                                channel = (Channel) e.getKey();
                                 channel.writeAndFlush(new TextWebSocketFrame("{\"command\":\"1\",\"appid\":\"" + fileurl + "\",\"updateAll\":true" + "}"));
                             }
 
@@ -274,7 +282,7 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
             appID = null;
             if (uri.indexOf("/", 1) > 1) {
                 appID = uri.substring(1, uri.indexOf("/", 1));
-                ipStrings = WifiSyncServer.getWorkspacePath();
+                ipStrings = wifiSyncServer.getWorkspacePath();
                 if (!ipStrings.endsWith(File.separator)) {
                     ipStrings = ipStrings + File.separator;
                 }
@@ -287,7 +295,7 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
                     int var38 = files.length;
 
                     File f;
-                    for(int var37 = 0; var37 < var38; ++var37) {
+                    for (int var37 = 0; var37 < var38; ++var37) {
                         f = var40[var37];
                         if (f.isDirectory()) {
                             result = "";
@@ -363,7 +371,7 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
         File[] var8;
         int var7 = (var8 = dir.listFiles()).length;
 
-        for(int var6 = 0; var6 < var7; ++var6) {
+        for (int var6 = 0; var6 < var7; ++var6) {
             File f = var8[var6];
             if (!f.isHidden() && f.canRead()) {
                 String name = f.getName();

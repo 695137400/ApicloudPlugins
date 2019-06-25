@@ -2,7 +2,9 @@ package com.apicloud.wifisyncmanager;
 
 import com.apicloud.networkservice.ConnectionUtil;
 import com.apicloud.plugin.util.ApicloudConstant;
+import com.apicloud.plugin.util.FileUtil;
 import com.apicloud.plugin.util.PrintUtil;
+import com.intellij.openapi.project.Project;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -32,11 +34,13 @@ import java.io.IOException;
 public class WifiSyncManager {
 
     private static String wigetPath;
+    private String projectName = null;
 
-    public WifiSyncManager() {
+    public WifiSyncManager(String name) {
+        this.projectName = name;
     }
 
-    public static void main(String[] args) throws Exception {
+    public void main(String[] args) throws Exception {
         wigetPath = "";
         if (args.length > 0) {
             int commandID = Integer.valueOf(args[0].replaceAll("[^0-9\\.]", ""));
@@ -57,14 +61,14 @@ public class WifiSyncManager {
                     workspacePath = ConnectionUtil.getConnectionMessage(htmlPath, null);
                     String[] values = workspacePath.split(":");
                     String[] ipValues = values[0].split(",");
-                    PrintUtil.info("WiFi 端口: " + values[1]);
+                    PrintUtil.info("WiFi 端口: " + values[1], projectName);
                     int i = 0;
                     String[] var33 = ipValues;
                     int var31 = ipValues.length;
 
                     for (int var32 = 0; var32 < var31; ++var32) {
                         appId = var33[var32];
-                        PrintUtil.info("WiFi 链接地址( " + i + "): " + appId);
+                        PrintUtil.info("WiFi 链接地址( " + i + "): " + appId, projectName);
                         ++i;
                     }
 
@@ -81,20 +85,20 @@ public class WifiSyncManager {
 
                     htmlPath = args[2];
                     workspacePath = "http://127.0.0.1:" + httpPort + "/?action=workspace" + "&path=\"" + htmlPath + "\"";
-                    PrintUtil.info("连接到：" + workspacePath);
+                    PrintUtil.info("连接到：" + workspacePath, projectName);
                     message0 = ConnectionUtil.getConnectionMessage(workspacePath, null);
-                    PrintUtil.info("message = " + message0);
+                    PrintUtil.info("message = " + message0, projectName);
                     getWidgetPath(wigetPath);
-                    PrintUtil.info("wigetPath = " + wigetPath);
+                    PrintUtil.info("wigetPath = " + wigetPath, projectName);
                     configPath = wigetPath + File.separator + "config.xml";
-                    PrintUtil.info("configPath = " + configPath);
+                    PrintUtil.info("configPath = " + configPath, projectName);
                     File var29 = new File(configPath);
                     if (!var29.exists()) {
-                        PrintUtil.info("Not found config.xml");
+                        PrintUtil.info("Not found config.xml", projectName);
                         return;
                     }
-                    PrintUtil.info("getAppId...");
-                    appId = getAppId(configPath);
+                    PrintUtil.info("getAppId...", projectName);
+                    appId = FileUtil.getAppId(configPath);
                     if (appId != null && !"".equals(appId)) {
                         String cmd = null;
                         if (commandID == 2) {
@@ -104,12 +108,12 @@ public class WifiSyncManager {
                         }
 
                         String url = "http://127.0.0.1:" + httpPort + "/?action=" + cmd + "&appid=" + appId;
-                        PrintUtil.info("url = " + url);
+                        PrintUtil.info("url = " + url, projectName);
                         String message = ConnectionUtil.getConnectionMessage(url, null);
-                        PrintUtil.info("message = " + message);
+                        PrintUtil.info("message = " + message, projectName);
                         break;
                     }
-                    PrintUtil.info("Please make sure the directory is correct");
+                    PrintUtil.info("Please make sure the directory is correct", projectName);
                     return;
                 case 4:
                     htmlPath = null;
@@ -125,44 +129,17 @@ public class WifiSyncManager {
                     workspacePath = args[2];
                     message0 = "http://127.0.0.1:" + httpPort + "/?action=workspace" + "&path=\"" + workspacePath + "\"";
                     configPath = ConnectionUtil.getConnectionMessage(message0, null);
-                    PrintUtil.info("message = " + configPath);
+                    PrintUtil.info("message = " + configPath, projectName);
                     String var12 = "http://127.0.0.1:" + httpPort + "/?action=review" + "&path=\"" + htmlPath + "\"";
                     appId = ConnectionUtil.getConnectionMessage(var12, null);
-                    PrintUtil.info("message = " + appId);
+                    PrintUtil.info("message = " + appId, projectName);
             }
 
         }
     }
 
 
-    private static String getAppId(String configPath) {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        Element widget = null;
-        Element root = null;
-
-        try {
-            factory.setIgnoringElementContentWhitespace(true);
-            DocumentBuilder db = factory.newDocumentBuilder();
-            Document xmldoc = db.parse(new File(configPath));
-            root = xmldoc.getDocumentElement();
-            widget = (Element) selectSingleNode("/widget", root);
-            String appId = widget.getAttribute("id");
-            return appId;
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-            PrintUtil.error(e.getMessage());
-        } catch (SAXException e) {
-            e.printStackTrace();
-            PrintUtil.error(e.getMessage());
-        } catch (IOException e) {
-            e.printStackTrace();
-            PrintUtil.error(e.getMessage());
-        }
-
-        return null;
-    }
-
-    private static void getWidgetPath(String filePath) {
+    private void getWidgetPath(String filePath) {
         if (filePath != null && !"".equals(filePath)) {
             File file = new File(filePath);
             String[] fileList = file.list();
@@ -173,7 +150,7 @@ public class WifiSyncManager {
             for (int var5 = 0; var5 < var6; ++var5) {
                 String fileS = var7[var5];
                 if ("config.xml".equals(fileS)) {
-                    String content = getWidgetContent(filePath + File.separator + "config.xml");
+                    String content = FileUtil.getWidgetContent(filePath + File.separator + "config.xml");
                     if (isContent(fileList, content)) {
                         wigetPath = filePath;
                         isContinue = false;
@@ -189,35 +166,8 @@ public class WifiSyncManager {
         }
     }
 
-    private static String getWidgetContent(String configPath) {
-        PrintUtil.info("getWidgetPath：" + configPath);
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        Element content = null;
-        Element root = null;
 
-        try {
-            factory.setIgnoringElementContentWhitespace(true);
-            DocumentBuilder db = factory.newDocumentBuilder();
-            Document xmldoc = db.parse(new File(configPath));
-            root = xmldoc.getDocumentElement();
-            content = (Element) selectSingleNode("/widget/content", root);
-            String src = content.getAttribute("src");
-            return src;
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-            PrintUtil.error(e.getMessage());
-        } catch (SAXException e) {
-            e.printStackTrace();
-            PrintUtil.error(e.getMessage());
-        } catch (IOException e) {
-            e.printStackTrace();
-            PrintUtil.error(e.getMessage());
-        }
-
-        return null;
-    }
-
-    private static boolean isContent(String[] listFile, String content) {
+    private boolean isContent(String[] listFile, String content) {
         String[] var5 = listFile;
         int var4 = listFile.length;
 
@@ -229,21 +179,6 @@ public class WifiSyncManager {
         }
 
         return false;
-    }
-
-    private static Node selectSingleNode(String express, Object source) {
-        Node result = null;
-        XPathFactory xpathFactory = XPathFactory.newInstance();
-        XPath xpath = xpathFactory.newXPath();
-
-        try {
-            result = (Node) xpath.evaluate(express, source, XPathConstants.NODE);
-        } catch (XPathExpressionException e) {
-            e.printStackTrace();
-            PrintUtil.error(e.getMessage());
-        }
-
-        return result;
     }
 
 }

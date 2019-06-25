@@ -5,6 +5,7 @@
 
 package com.apicloud.wifisyncserver;
 
+import com.apicloud.plugin.util.RunProperties;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -21,8 +22,12 @@ import io.netty.handler.stream.ChunkedWriteHandler;
 public class HttpFileServer {
     private static String websocketPort = null;
     private Channel ch = null;
+    private String name = null;
+    private WebSocketServer webSocketServer = null;
 
-    public HttpFileServer() {
+    public HttpFileServer(String name) {
+        this.name = name;
+        webSocketServer = RunProperties.getWebSocketServer(name);
     }
 
     public static String getWebsocketPort() {
@@ -45,14 +50,14 @@ public class HttpFileServer {
                     ch.pipeline().addLast("http-aggregator", new HttpObjectAggregator(65536));
                     ch.pipeline().addLast("http-encoder", new HttpResponseEncoder());
                     ch.pipeline().addLast("http-chunked", new ChunkedWriteHandler());
-                    ch.pipeline().addLast("fileServerHandler", new HttpFileServerHandler(url));
+                    ch.pipeline().addLast("fileServerHandler", new HttpFileServerHandler(url, name));
                 }
             });
             ChannelFuture future = b.bind(port).sync();
-            WebSocketServer.setHttpPort("" + port);
+            webSocketServer.setHttpPort("" + port);
             ch = future.channel();
             ch.closeFuture().sync();
-        }catch (Exception e){
+        } catch (Exception e) {
 
         } finally {
             bossGroup.shutdownGracefully();
