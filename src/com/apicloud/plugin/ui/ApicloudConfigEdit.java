@@ -5,10 +5,10 @@ import com.apicloud.plugin.ui.apicloudInfo.ApicloudInfo;
 import com.apicloud.plugin.ui.apicloudInfo.Feature;
 import com.apicloud.plugin.ui.apicloudInfo.FeatureParam;
 import com.apicloud.plugin.util.ApicloudXML;
-import com.apicloud.plugin.util.PrintUtil;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
+import org.apache.commons.lang.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -309,140 +309,87 @@ public class ApicloudConfigEdit extends JPanel {
 
         if (contact.isSelected()) {
             apicloudInfo.permission.setContact(true);
-        } else {
-            apicloudInfo.permission.setContact(false);
         }
         if (readPhoneState.isSelected()) {
             apicloudInfo.permission.setReadPhoneState(true);
-        } else {
-            apicloudInfo.permission.setReadPhoneState(false);
         }
         if (camera.isSelected()) {
             apicloudInfo.permission.setCamera(true);
-        } else {
-            apicloudInfo.permission.setCamera(false);
         }
         if (fileSystem.isSelected()) {
             apicloudInfo.permission.setFileSystem(true);
-        } else {
-            apicloudInfo.permission.setFileSystem(false);
         }
         if (internetl.isSelected()) {
             apicloudInfo.permission.setInternetl(true);
-        } else {
-            apicloudInfo.permission.setInternetl(false);
         }
         if (call.isSelected()) {
             apicloudInfo.permission.setCall(true);
-        } else {
-            apicloudInfo.permission.setCall(false);
         }
         if (record.isSelected()) {
             apicloudInfo.permission.setRecord(true);
-        } else {
-            apicloudInfo.permission.setRecord(false);
         }
         if (hardware.isSelected()) {
             apicloudInfo.permission.setHardware(true);
-        } else {
-            apicloudInfo.permission.setHardware(false);
         }
         if (sms.isSelected()) {
             apicloudInfo.permission.setSms(true);
-        } else {
-            apicloudInfo.permission.setSms(false);
         }
         if (location.isSelected()) {
             apicloudInfo.permission.setLocation(true);
-        } else {
-            apicloudInfo.permission.setLocation(false);
         }
         if (bootCompleted.isSelected()) {
             apicloudInfo.permission.setBootCompleted(true);
-        } else {
-            apicloudInfo.permission.setBootCompleted(false);
         }
 
         if (pageBounce.isSelected()) {
             apicloudInfo.preference.setPageBounce(true);
-        } else {
-            apicloudInfo.preference.setPageBounce(false);
         }
         if (hScrollBarEnabled.isSelected()) {
             apicloudInfo.preference.sethScrollBarEnabled(true);
-        } else {
-            apicloudInfo.preference.sethScrollBarEnabled(false);
         }
         if (vScrollBarEnabled.isSelected()) {
             apicloudInfo.preference.setvScrollBarEnabled(true);
-        } else {
-            apicloudInfo.preference.setvScrollBarEnabled(false);
         }
         if (autoLaunch.isSelected()) {
             apicloudInfo.preference.setAutoLaunch(true);
-        } else {
-            apicloudInfo.preference.setAutoLaunch(false);
         }
         if (statusBarAppearance.isSelected()) {
             apicloudInfo.preference.setStatusBarAppearance(true);
-        } else {
-            apicloudInfo.preference.setStatusBarAppearance(false);
         }
         if (fullScreen.isSelected()) {
             apicloudInfo.preference.setFullScreen(true);
-        } else {
-            apicloudInfo.preference.setFullScreen(false);
         }
         if (autoUpdate.isSelected()) {
             apicloudInfo.preference.setAutoUpdate(true);
-        } else {
-            apicloudInfo.preference.setAutoUpdate(false);
         }
         if (smartUpdate.isSelected()) {
             apicloudInfo.preference.setSmartUpdate(true);
-        } else {
-            apicloudInfo.preference.setSmartUpdate(false);
         }
         if (debug.isSelected()) {
             apicloudInfo.preference.setDebug(true);
-        } else {
-            apicloudInfo.preference.setDebug(false);
         }
         if (allowKeyboardExtension.isSelected()) {
             apicloudInfo.preference.setAllowKeyboardExtension(true);
-        } else {
-            apicloudInfo.preference.setAllowKeyboardExtension(false);
         }
         if (softInputBarEnabled.isSelected()) {
             apicloudInfo.preference.setSoftInputBarEnabled(true);
-        } else {
-            apicloudInfo.preference.setSoftInputBarEnabled(false);
         }
         if (launcher.isSelected()) {
             apicloudInfo.preference.setLauncher(true);
-        } else {
-            apicloudInfo.preference.setLauncher(false);
         }
         if (checkSslTrusted.isSelected()) {
             apicloudInfo.preference.setCheckSslTrusted(true);
-        } else {
-            apicloudInfo.preference.setCheckSslTrusted(false);
         }
         if (dragAndDrop.isSelected()) {
             apicloudInfo.preference.setDragAndDrop(true);
-        } else {
-            apicloudInfo.preference.setDragAndDrop(false);
         }
         if (fileShare.isSelected()) {
             apicloudInfo.preference.setFileShare(true);
-        } else {
-            apicloudInfo.preference.setFileShare(false);
         }
         if (appCertificateVerify.isSelected()) {
             apicloudInfo.preference.setAppCertificateVerify(true);
-        } else {
-            apicloudInfo.preference.setAppCertificateVerify(false);
         }
+
         if (keyAuto.isSelected()) {
             apicloudInfo.preference.setSoftInputMode("auto");
         } else if (keyResize.isSelected()) {
@@ -540,6 +487,7 @@ public class ApicloudConfigEdit extends JPanel {
             apicloudInfo.feature.add(feature);
         }
         System.out.println(JSON.toJSON(apicloudInfo));
+
     }
 
     private void restoreData() {
@@ -550,12 +498,152 @@ public class ApicloudConfigEdit extends JPanel {
             apicloudDescription.setText(apicloudInfo.getAppDescription());
             apicloudInfo.setAppName(apicloudName.getText());
             apicloudName.setText(apicloudInfo.getAppName());
-
-
             apicloudContent.setText(apicloudInfo.getContent());
             authorName.setText(apicloudInfo.author.getAuthorName());
             authoEmail.setText(apicloudInfo.author.getEmail());
             authoHref.setText(apicloudInfo.author.getHref());
+
+            if (!StringUtils.isEmpty(apicloudInfo.access.getAccessText())) {
+                if ("*".equals(apicloudInfo.access.getAccessText())) {
+                    accessAll.setSelected(true);
+                } else if ("local".equals(apicloudInfo.access.getAccessText())) {
+                    accessLocal.setSelected(true);
+                } else if ("nojailbreak".equals(apicloudInfo.access.getAccessText())) {
+                    accessNojailbreak.setSelected(true);
+                } else {
+                    accessText.setText(apicloudInfo.access.getAccessText());
+                }
+            }
+            contact.setSelected(apicloudInfo.permission.isContact());
+            readPhoneState.setSelected(apicloudInfo.permission.isReadPhoneState());
+            camera.setSelected(apicloudInfo.permission.isCamera());
+            fileSystem.setSelected(apicloudInfo.permission.isFileSystem());
+            internetl.setSelected(apicloudInfo.permission.isInternetl());
+            call.setSelected(apicloudInfo.permission.isCall());
+            record.setSelected(apicloudInfo.permission.isRecord());
+            hardware.setSelected(apicloudInfo.permission.isHardware());
+            sms.setSelected(apicloudInfo.permission.isSms());
+            location.setSelected(apicloudInfo.permission.isLocation());
+            bootCompleted.setSelected(apicloudInfo.permission.isBootCompleted());
+            pageBounce.setSelected(apicloudInfo.preference.isPageBounce());
+            hScrollBarEnabled.setSelected(apicloudInfo.preference.ishScrollBarEnabled());
+            vScrollBarEnabled.setSelected(apicloudInfo.preference.isvScrollBarEnabled());
+            autoLaunch.setSelected(apicloudInfo.preference.isAutoLaunch());
+            statusBarAppearance.setSelected(apicloudInfo.preference.isStatusBarAppearance());
+            fullScreen.setSelected(apicloudInfo.preference.isFullScreen());
+            autoUpdate.setSelected(apicloudInfo.preference.isAutoUpdate());
+            smartUpdate.setSelected(apicloudInfo.preference.isSmartUpdate());
+            debug.setSelected(apicloudInfo.preference.isDebug());
+            allowKeyboardExtension.setSelected(apicloudInfo.preference.isAllowKeyboardExtension());
+            softInputBarEnabled.setSelected(apicloudInfo.preference.isSoftInputBarEnabled());
+            launcher.setSelected(apicloudInfo.preference.isLauncher());
+            checkSslTrusted.setSelected(apicloudInfo.preference.isCheckSslTrusted());
+            dragAndDrop.setSelected(apicloudInfo.preference.isDragAndDrop());
+            fileShare.setSelected(apicloudInfo.preference.isFileShare());
+            appCertificateVerify.setSelected(apicloudInfo.preference.isAppCertificateVerify());
+            if ("auto".equals(apicloudInfo.preference.getSoftInputMode())) {
+                keyAuto.setSelected(true);
+            } else if ("resize".equals(apicloudInfo.preference.getSoftInputMode())) {
+                keyResize.setSelected(true);
+            } else if ("pan".equals(apicloudInfo.preference.getSoftInputMode())) {
+                keyPan.setSelected(true);
+            }
+            if (!StringUtils.isEmpty(apicloudInfo.preference.getFont())) {
+                fontText.setText(apicloudInfo.preference.getFont());
+            }
+            if (!StringUtils.isEmpty(apicloudInfo.preference.getUrlScheme())) {
+                urlSchemeText.setText(apicloudInfo.preference.getUrlScheme());
+            }
+            if (!StringUtils.isEmpty(apicloudInfo.preference.getUserAgent())) {
+                userAgentText.setText(apicloudInfo.preference.getUserAgent());
+            }
+            if (!StringUtils.isEmpty(apicloudInfo.preference.getCustomRefreshHeader())) {
+                customRefreshHeaderText.setText(apicloudInfo.preference.getCustomRefreshHeader());
+            }
+            if (!StringUtils.isEmpty(apicloudInfo.preference.getForbiddenSchemes())) {
+                forbiddenSchemesText.setText(apicloudInfo.preference.getForbiddenSchemes());
+            }
+            if (!StringUtils.isEmpty(apicloudInfo.preference.getQuerySchemes())) {
+                querySchemesText.setText(apicloudInfo.preference.getQuerySchemes());
+            }
+            String backgroundMode = apicloudInfo.preference.getBackgroundMode();
+            if (!StringUtils.isEmpty(backgroundMode)) {
+                String[] backgroundModeList = backgroundMode.split("|");
+                if (backgroundModeList.length > 0) {
+                    for (int i = 0; i < backgroundModeList.length; i++) {
+                        String bm = backgroundModeList[i];
+                        switch (bm) {
+                            case "audio":
+                                audioCheckBox.setSelected(true);
+                                break;
+                            case "newsstand-content":
+                                newsstandContentCheckBox.setSelected(true);
+                                break;
+                            case "external-accessory":
+                                externalAccessoryCheckBox.setSelected(true);
+                                break;
+                            case "location":
+                                locationCheckBox.setSelected(true);
+                                break;
+                            case "bluetooth-central":
+                                bluetoothCentralCheckBox.setSelected(true);
+                                break;
+                            case "bluetooth-peripheral":
+                                bluetoothPeripheralCheckBox.setSelected(true);
+                                break;
+                            case "voip":
+                                voipCheckBox.setSelected(true);
+                                break;
+                            case "fetch":
+                                fetchCheckBox.setSelected(true);
+                                break;
+                            case "remote-notification":
+                                remoteNotificationCheckBox.setSelected(true);
+                                break;
+                        }
+                    }
+                }
+            }
+            if (!StringUtils.isEmpty(apicloudInfo.preference.getAppBackground())) {
+                appBackgroundText.setText(apicloudInfo.preference.getAppBackground());
+            }
+            if (!StringUtils.isEmpty(apicloudInfo.preference.getWindowBackground())) {
+                windowBackgroundText.setText(apicloudInfo.preference.getWindowBackground());
+            }
+            if (!StringUtils.isEmpty(apicloudInfo.preference.getFrameBackgroundColor())) {
+                frameBackgroundColorText.setText(apicloudInfo.preference.getFrameBackgroundColor());
+            }
+            List<Feature> feature = apicloudInfo.feature;
+            if (null != feature && feature.size() > 0) {
+                for (int i = 0; i < feature.size(); i++) {
+                    Feature fea = feature.get(i);
+                    String title = fea.getTitleName();
+                    FeatureRow fw = new FeatureRow(title);
+                    JScrollPane s1 = new JScrollPane();
+                    JPanel rp = new JPanel();
+                    List<FeatureParam> param = fea.param;
+                    if (null != param && param.size() > 0) {
+                        for (int t = 0; t < param.size(); t++) {
+                            JPanel jp1 = new JPanel();
+                            FeatureParam featureParam = param.get(t);
+                            JTextField key = new JTextField();
+                            key.setText(featureParam.getName());
+                            JTextField value = new JTextField();
+                            value.setText(featureParam.getValue());
+                            jp1.add(key, 0);
+                            jp1.add(value, 1);
+                            rp.add(jp1, t);
+                        }
+                        s1.add(rp, 0);
+                    }
+                    JCheckBox ck = new JCheckBox();
+                    ck.setSelected(fea.isForceBind());
+                    fw.add(ck, 0);
+                    fw.add(s1, 1);
+                    tabbedPane2.addTab(title, fw);
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -566,13 +654,14 @@ public class ApicloudConfigEdit extends JPanel {
         //dispose();
     }
 
-    public static void main() {
+    public static void main(String[] args) {
         JFrame frame = new JFrame("apicloud");
         frame.setContentPane(new ApicloudConfigEdit().contentPane);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
     }
+
 
     public JPanel getContentPane() {
         return contentPane;

@@ -59,7 +59,7 @@ public class ApicloudXML {
                 }
             } else if ("preference".equals(element.getName())) {
                 if (null != element.attribute("name")) {
-                    String name = element.attribute("name").getName();
+                    String name = element.attribute("name").getValue();
                     if ("appBackground".equals(name)) {
                         if (null != element.attribute("value")) {
                             apicloudInfo.preference.setAppBackground(element.attribute("value").getValue());
