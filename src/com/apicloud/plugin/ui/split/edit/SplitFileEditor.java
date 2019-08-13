@@ -49,7 +49,6 @@ public abstract class SplitFileEditor<E1 extends FileEditor, E2 extends FileEdit
         splitter.setFirstComponent(myMainEditor.getComponent());
         splitter.setSecondComponent(mySecondEditor.getComponent());
 
-
         return splitter;
     }
 
@@ -90,7 +89,7 @@ public abstract class SplitFileEditor<E1 extends FileEditor, E2 extends FileEdit
     @NotNull
     @Override
     public FileEditorState getState(@NotNull FileEditorStateLevel level) {
-        return new MyFileEditorState("", myMainEditor.getState(level), mySecondEditor.getState(level));
+        return new MyFileEditorState("XML", myMainEditor.getState(level), mySecondEditor.getState(level));
     }
 
     @Override

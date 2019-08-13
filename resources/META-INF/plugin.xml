@@ -58,11 +58,11 @@
 
          <fileEditorProvider implementation="com.apicloud.plugin.ui.split.preview.ApicloudSplitEditorProvider"/>
     </extensions>
-      <application-components>
+    <!--  <application-components>
           <component>
               <implementation-class>com.apicloud.plugin.ui.ApicloudConfigEdit</implementation-class>
           </component>
-      </application-components>
+      </application-components>-->
     <actions>
         <action id="ApicloudRunAction" class="com.apicloud.plugin.run.AndroidApicloudRunAction">
             <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="MainMenu"/><!--添加运行按钮-->
@@ -79,8 +79,8 @@
             <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="MainMenu"/><!--添加运行按钮-->
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
-          <group id="Markdown.Toolbar.Left" class="com.intellij.openapi.actionSystem.DefaultActionGroup" text="Markdown editor actions"/>
-          <group id="Markdown.Toolbar.Right" class="com.intellij.openapi.actionSystem.DefaultActionGroup" text="Markdown editor layout actions"/>
+          <!--<group id="Apicloud.Toolbar.Left" class="com.intellij.xml.actions.XmlActionsGroup" text="Markdown editor actions"/>
+          <group id="Apicloud.Toolbar.Right" class="com.intellij.openapi.vcs.actions.VcsActionGroup" text="Markdown editor layout actions"/>-->
     </actions>
 
 </idea-plugin>

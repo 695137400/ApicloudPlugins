@@ -14,7 +14,7 @@ public class ApicloudSplitEditor extends SplitFileEditor<TextEditor, ApicloudPre
     @NotNull
     @Override
     public String getName() {
-        return "Markdown split editor";
+        return "Apicloud split editor";
     }
 
     @NotNull

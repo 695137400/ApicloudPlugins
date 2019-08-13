@@ -52,13 +52,19 @@ public class TailContentExecutor implements Disposable {
         WebStorm webStorm = RunProperties.getWebStorm(project.getName());
         File tempPath = new File(FileUtil.getTempDirectory().toString() + "/apicloud-intelliJ-plugin");
         if (tempPath.exists()) {
-            String adbPath = tempPath.getAbsolutePath();
+            String adbPath = tempPath.getAbsolutePath() + "/tools/" + webStorm.osADB();
+            String out = (String) webStorm.runCmd("adb", false);
+            if (out.contains("Android")) {
+                adbPath = "adb ";
+                PrintUtil.info("检测到系统有ADB环境，优先使用系统ADB", project.getName());
+            }
+            String finalAdbPath = adbPath;
             new Thread() {
                 @Override
                 public void run() {
                     while (true) {
                         try {
-                            wifiAdb(webStorm, project, adbPath);
+                            wifiAdb(webStorm, project, finalAdbPath);
                             Thread.sleep(1500);
                         } catch (InterruptedException e) {
 
@@ -143,7 +149,7 @@ public class TailContentExecutor implements Disposable {
         String remotes[] = null;
         Object o = null;
         try {
-            o = webStorm.runCmd(adbPath + "/tools/" + webStorm.osADB() + " -s " + device + " shell cat /proc/net/unix |grep -a devtools_remote", false);
+            o = webStorm.runCmd(adbPath + " -s " + device + " shell cat /proc/net/unix |grep -a devtools_remote", false);
         } catch (Exception e) {
 
         }
@@ -154,7 +160,7 @@ public class TailContentExecutor implements Disposable {
         }
         if (null != remote || !"".equals(remote)) {
             try {
-                o = webStorm.runCmd(adbPath + "/tools/" + webStorm.osADB() + " -s " + device + "  forward tcp:9888 localabstract:" + remote, false);
+                o = webStorm.runCmd(adbPath + " -s " + device + "  forward tcp:9888 localabstract:" + remote, false);
                 String s = HttpClientUtil.sendGet("http://localhost:9888/json", "v=1");
                 if (null != s && !"".equals(s)) {
                     JSONArray array = (JSONArray) JSON.parse(s);
@@ -164,7 +170,7 @@ public class TailContentExecutor implements Disposable {
                         for (int i = 0; i < array.size(); i++) {
                             JSONObject jo = (JSONObject) array.get(i);
                             RunProperties.adbWifi(device + jo.getString("id"), "1");
-                            PrintUtil.info("\n名称：" + jo.getString("title"), project.getName());
+                            PrintUtil.info("\n名称：" + new String(jo.getString("title").getBytes("gbk"), "utf-8"), project.getName());
                             PrintUtil.printUrl("url：", project.getName(), "chrome-devtools://devtools/bundled/inspector.html?ws=localhost:9888/devtools/page/" + jo.getString("id"));
                             PrintUtil.printInfoNoDate("说明： " + jo.getString("url"), project.getName());
 
@@ -180,17 +186,17 @@ public class TailContentExecutor implements Disposable {
                     }
                 }
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
         }
     }
 
-    private void wifiAdb(WebStorm webStorm, final Project project, final String adbPath) {
+    private void wifiAdb(WebStorm webStorm, final Project project, String adbPath) {
         Object adbwwifi = null;
         try {
             String adbList[] = new String[0];
             try {
-                adbwwifi = webStorm.runCmd(adbPath + "/tools/" + webStorm.osADB() + " devices", false);
+                adbwwifi = webStorm.runCmd(adbPath + " devices", false);
                 System.out.println(adbwwifi);
                 adbList = adbwwifi.toString().split("\n");
             } catch (Exception e) {
@@ -226,7 +232,7 @@ public class TailContentExecutor implements Disposable {
                                                 isnew = true;
                                             }
                                             RunProperties.adbWifi(name + jo.getString("id"), "1");
-                                            PrintUtil.info("\n名称：" + jo.getString("title"), project.getName());
+                                            PrintUtil.info("\n名称：" + new String(jo.getString("title").getBytes("gbk"), "utf-8"), project.getName());
                                             PrintUtil.printUrl("url：", project.getName(), "chrome-devtools://devtools/bundled/inspector.html?ws=localhost:9888/devtools/page/" + jo.getString("id"));
                                             PrintUtil.printInfoNoDate("说明： " + jo.getString("url"), project.getName());
                                         }
@@ -237,14 +243,14 @@ public class TailContentExecutor implements Disposable {
                             RunProperties.adbDevices(name, status);
                             if ("device".equals(status) || (null != RunProperties.adbDevices(name) && !"device".equals(RunProperties.adbDevices(name)))) {
                                 try {
-                                    webStorm.runCmd(adbPath + "/tools/" + webStorm.osADB() + " tcpip 8888", false);
+                                    webStorm.runCmd(adbPath + " tcpip 8888", false);
                                     ArrayList<String> ips = RunProperties.getIP();
                                     if (ips.size() > 0) {
                                         for (int p = 0; p < ips.size(); p++) {
                                             try {
                                                 String ipstatus = RunProperties.adbIp(ips.get(p));
                                                 if (null == ipstatus || (null != ipstatus && !"device".equals(ipstatus))) {
-                                                    webStorm.runCmd(adbPath + "/tools/" + webStorm.osADB() + " connect " + ips.get(p) + ":8888", false);
+                                                    webStorm.runCmd(adbPath + " connect " + ips.get(p) + ":8888", false);
                                                     RunProperties.adbIp(ips.get(p), "1");
                                                     PrintUtil.error("检测到有已链接的USB设备，开启可用 WIFI ADB 无线调试，您现在可以断开USB数据链接，打开谷歌浏览器进行方便的无线调试", project.getName());
                                                     adbTools(webStorm, project, adbPath, name);

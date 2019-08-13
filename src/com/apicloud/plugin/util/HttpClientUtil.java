@@ -23,7 +23,7 @@ public class HttpClientUtil {
 
     private static final Logger logger = Logger.getLogger(HttpClientUtil.class);
 
-    public static String sendGet(String url, String param) {
+    public static String sendGet(String url, String param) throws Exception{
         String result = "";
         BufferedReader in = null;
         try {
@@ -52,6 +52,7 @@ public class HttpClientUtil {
         } catch (Exception e) {
             System.out.println("发送GET请求出现异常！" + e);
             e.printStackTrace();
+            throw e;
         }
         // 使用finally块来关闭输入流
         finally {
@@ -124,7 +125,7 @@ public class HttpClientUtil {
     }
 
 
-    public static Object send(Map<String, Object> params, String url) {
+    public static Object send(Map<String, Object> params, String url) throws Exception{
         return (Object) sendGet(url, mapParams(params));
     }
 
@@ -138,7 +139,7 @@ public class HttpClientUtil {
     }
 
     public static void main(String[] args) {
-        JSON.parseObject(HttpClientUtil.sendGet("http://localhost:9888/json","v=1"));
+        //JSON.parseObject(HttpClientUtil.sendGet("http://localhost:9888/json","v=1"));
       System.out.println();
     }
 }

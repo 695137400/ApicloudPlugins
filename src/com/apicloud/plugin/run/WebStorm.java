@@ -88,10 +88,12 @@ public class WebStorm {
                 String currentVersion = getApploaderVersionCmd(device);
                 boolean isNeedInstall = true;
                 if (currentVersion != null) {
-                    PrintUtil.info("compareAppLoaderVer...", projectName);
-                    isNeedInstall = compareAppLoaderVer(currentVersion, pendingVersion);
+                   /* PrintUtil.info("compareAppLoaderVer...", projectName);
+                    isNeedInstall = compareAppLoaderVer(currentVersion, pendingVersion);*/
+                }else {
+                    isOk = installAppLoaderCmd(device);
                 }
-                PrintUtil.info("isNeedInstall is " + isNeedInstall, projectName);
+                /*PrintUtil.info("isNeedInstall is " + isNeedInstall, projectName);
                 if (isNeedInstall) {
                     if (currentVersion != null) {
                         PrintUtil.info("uninstallApploader...", projectName);
@@ -111,7 +113,10 @@ public class WebStorm {
                 } else {
                     PrintUtil.info("stopApploader...", projectName);
                     stopApploaderCmd(device);
-                }
+                }*/
+                PrintUtil.info("stopApploader...", projectName);
+                stopApploaderCmd(device);
+                Thread.sleep(200);
                 PrintUtil.info("startApploader...", projectName);
                 isOk = startApploaderCmd(device);
                 if (!isOk) {
@@ -173,7 +178,7 @@ public class WebStorm {
         File load_conf_file = new File(loaderPath + "/load.conf");
         PrintUtil.info("load_conf_file.exists:" + load_conf_file.exists(), projectName);
         PrintUtil.info("load_conf_file:" + load_conf_file.getAbsolutePath(), projectName);
-
+        //TODO APK更新
         File load_apk_file = new File(loaderPath + "/load.apk");
         PrintUtil.info("load_apk_file:" + load_apk_file.getAbsolutePath(), projectName);
         PrintUtil.info("load_apk_file.exists:" + load_apk_file.exists(), projectName);
@@ -192,6 +197,11 @@ public class WebStorm {
             runCmd(chx, false);
         } else {
             adbPath = toolsFile.getAbsolutePath() + File.separator + "adb.exe";
+        }
+        String out = (String)  runCmd("adb",false);
+        if (out.contains("Android")) {
+            adbPath = "adb ";
+            PrintUtil.info("检测到系统有ADB环境，优先使用系统ADB", projectName);
         }
         PrintUtil.info("adbPath:" + adbPath, projectName);
         InputStreamReader read = new InputStreamReader(new FileInputStream(load_conf_file));// 考虑到编码格式

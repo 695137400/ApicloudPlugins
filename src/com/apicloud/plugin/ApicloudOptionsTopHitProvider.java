@@ -40,50 +40,44 @@ public class ApicloudOptionsTopHitProvider extends OptionsTopHitProvider {
                             String systemPath = properties.getProperty("idea.plugins.path");
                             File tempPath = new File(FileUtil.getTempDirectory().toString() + "/apicloud-intelliJ-plugin");
                             WebStorm webStorm = RunProperties.getWebStorm(project.getName());
-                            if (tempPath.exists()) {
-                                if (!webStorm.isMacOS() && !webStorm.isLinux()) {
-                                    webStorm.runCmd(tempPath.getAbsolutePath() + "/tools/adb.exe  kill-server", false);
-                                }
-                                if (webStorm.isMacOS()) {
-                                    try {
-                                        webStorm.runCmd(tempPath.getAbsolutePath() + "/tools/adb-ios  kill-server", false);
-                                    } catch (Exception e) {
-                                        String chx = "chmod +x " + tempPath.getAbsolutePath() + "/tools/adb-ios";
-                                        webStorm.runCmd(chx, false);
-                                        try {
-                                            webStorm.runCmd(tempPath.getAbsolutePath() + "/tools/adb-ios  kill-server", false);
-                                        } catch (Exception e1) {
-                                            PrintUtil.info("ADB被占用，没有权限停止", project.getName());
-                                        }
-                                    }
-                                }
-                                if (webStorm.isLinux()) {
-                                    try {
-                                        webStorm.runCmd(tempPath.getAbsolutePath() + "/tools/adb-linux  kill-server", false);
-                                    } catch (Exception e) {
-                                        String chx = "chmod +x " + tempPath.getAbsolutePath() + "/tools/adb-linux";
-                                        webStorm.runCmd(chx, false);
-                                        try {
-                                            webStorm.runCmd(tempPath.getAbsolutePath() + "/tools/adb-linux  kill-server", false);
-                                        } catch (Exception e1) {
-                                            PrintUtil.info("ADB被占用，没有权限停止", project.getName());
-                                        }
-                                    }
-                                }
-                                Thread.sleep(100);
-                                tempPath.delete();
-                            } else {
+                            String adbPath = "";
+                            if (!tempPath.exists()) {
                                 tempPath = FileUtil.createTempDirectory("apicloud-intelliJ-plugin", null, true);
                             }
+                            adbPath = tempPath.getAbsolutePath() + "/tools/" + webStorm.osADB();
+                            String out = (String) webStorm.runCmd("adb", false);
+                            Thread.sleep(200);
+                            if (out.contains("Android")) {
+                                adbPath = "adb ";
+                                PrintUtil.info("检测到系统有ADB环境，优先使用系统ADB", project.getName());
+                            }
+                            if (!webStorm.isMacOS() && !webStorm.isLinux()) {
+                                webStorm.runCmd(adbPath + " kill-server", false);
+                            }
+                            if (webStorm.isLinux() || webStorm.isMacOS()) {
+                                try {
+                                    webStorm.runCmd(adbPath + "  kill-server", false);
+                                } catch (Exception e) {
+                                    String chx = "chmod +x " + adbPath;
+                                    webStorm.runCmd(chx, false);
+                                    try {
+                                        webStorm.runCmd(adbPath + " kill-server", false);
+                                    } catch (Exception e1) {
+                                        PrintUtil.info("ADB被占用，没有权限停止", project.getName());
+                                    }
+                                }
+                            }
+                            Thread.sleep(100);
+                            tempPath.delete();
                             PrintUtil.info("查找Apicloud插件", project.getName());
                             PrintUtil.info("开始解压Apicloud插件", project.getName());
                             try {
                                 com.apicloud.plugin.util.FileUtil.unZip(systemPath + "/ApicloudPlugins/lib/resources.jar", tempPath.getAbsolutePath() + "/", false);
                                 Thread.sleep(100);
                                 if (webStorm.isMacOS() || webStorm.isLinux()) {
-                                    String chx = "chmod +x " + tempPath.getAbsolutePath() + "/tools/adb-ios";
+                                    String chx = "chmod +x " + adbPath;
                                     webStorm.runCmd(chx, false);
-                                    chx = "chmod +x " + tempPath.getAbsolutePath() + "/tools/adb-linux";
+                                    chx = "chmod +x " + adbPath;
                                     webStorm.runCmd(chx, false);
                                 }
                             } catch (Exception e) {

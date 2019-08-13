@@ -1,8 +1,6 @@
 package com.apicloud.console.log;
 
-import com.apicloud.plugin.run.WebStorm;
 import com.apicloud.plugin.util.PrintUtil;
-import com.intellij.openapi.project.Project;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -27,19 +25,7 @@ public class ConsoleLog {
         projectName = name;
     }
 
-    public void main(String workPath, String adbDevices) {
-        String adbPath;
-        if (OS.isMacOS()) {
-            adbPath = workPath + "tools" + File.separator + "adb-ios";
-            String chx = "chmod +x " + adbPath;
-            WebStorm.runCmd(chx, false);
-        } else if (OS.isLinux()) {
-            adbPath = workPath + "tools" + File.separator + "adb-linux";
-            String chx = "chmod +x " + adbPath;
-            WebStorm.runCmd(chx, false);
-        } else {
-            adbPath = workPath + "tools" + File.separator + "adb.exe";
-        }
+    public void main(String adbPath, String adbDevices) {
 
         String[] parameters = new String[]{adbPath, "-s", adbDevices, "logcat", "-v", "time", "-s", "app3c"};
 
