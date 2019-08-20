@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WebSocketServer {
 
     private Map<Channel, String> map = new ConcurrentHashMap();
-    private String httpPort = "8080";
+    private String httpPort = "10080";
     private Channel ch = null;
     private String projectName = null;
 

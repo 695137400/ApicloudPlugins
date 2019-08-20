@@ -59,6 +59,7 @@ public class TailContentExecutor implements Disposable {
                 PrintUtil.info("检测到系统有ADB环境，优先使用系统ADB", project.getName());
             }
             String finalAdbPath = adbPath;
+            RunProperties.setAdbPath(finalAdbPath);
             new Thread() {
                 @Override
                 public void run() {

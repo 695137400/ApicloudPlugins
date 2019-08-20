@@ -1,11 +1,8 @@
 package com.apicloud.wifisyncserver;
 
 import com.apicloud.commons.model.Config;
-import com.apicloud.plugin.ApicloudOptionsTopHitProvider;
-import com.apicloud.plugin.run.WifiApicloudRunAction;
 import com.apicloud.plugin.util.PrintUtil;
 import com.apicloud.plugin.util.RunProperties;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -170,7 +167,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
                                 e.printStackTrace();
                             }
                         }
-                    } else  if (fileList.isDirectory()) {
+                    } else if (fileList.isDirectory()) {
                         try {
                             path = fileList.getCanonicalPath();
                         } catch (IOException var25) {

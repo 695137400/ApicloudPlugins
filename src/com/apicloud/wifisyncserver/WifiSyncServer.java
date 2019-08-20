@@ -24,7 +24,7 @@ import java.util.Random;
 public class WifiSyncServer {
 
     private String workspacePath;
-    private int httpport = 8080;
+    private int httpport = 10080;
     private int websocketport = 10915;
     ApicloudRun httpServer = null;
     ApicloudRun websocketServer = null;

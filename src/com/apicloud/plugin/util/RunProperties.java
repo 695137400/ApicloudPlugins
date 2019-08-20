@@ -158,4 +158,14 @@ public class RunProperties {
             ipList.put(ip, "0");
         }
     }
+
+    private static String adbPath = "";
+
+    public static String getAdbPath() {
+        return adbPath;
+    }
+
+    public static void setAdbPath(String adbPath) {
+        RunProperties.adbPath = adbPath;
+    }
 }
