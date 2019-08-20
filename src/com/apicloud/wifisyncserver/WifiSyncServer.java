@@ -141,7 +141,7 @@ public class WifiSyncServer {
                                 websocketport += (new Random()).nextInt(10000);
                             } else {
                                 socketServer.run(websocketport);
-                                jsonObject.put("http_port", httpport);
+                                jsonObject.put("websocket_port", websocketport);
                                 ApicloudConstant.WIFI_CONFIG_INFO = jsonObject.toString();
                                 break;
                             }
