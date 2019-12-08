@@ -6,10 +6,7 @@ import com.apicloud.plugin.util.RunProperties;
 import com.intellij.openapi.util.io.FileUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.CharsetUtil;
@@ -21,6 +18,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,10 +69,16 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
             } else {
                 String ip = getIPString(ctx);
                 PrintUtil.info("新链接手机IP：" + ip, projectName);
+                if (null != webSocketServer.getF_map().get(ip)) {
+                    webSocketServer.getMap().remove(webSocketServer.getF_map().get(ip));
+                    webSocketServer.getF_map().remove(ip);
+                }
+                webSocketServer.getF_map().put(ip,ctx.channel());
                 webSocketServer.getMap().put(ctx.channel(), ip);
                 RunProperties.addIp(ip);
                 this.handshaker.handshake(ctx.channel(), req);
-                ctx.channel().write(new TextWebSocketFrame("{\"command\":\"7\",\"port\":\"" + webSocketServer.getHttpPort() + "\"}"));
+                ctx.channel().write(new TextWebSocketFrame("{\"command\":\"7\",\"port\":\"" + wifiSyncServer.getWebsocketport() + "\"}"));
+               // ctx.channel().write(new TextWebSocketFrame("{\"command\":\"7\",\"port\":\"" + wifiSyncServer.getHttpport() + "\"}"));
             }
 
         } else {
@@ -358,6 +363,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
     }
 
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        System.out.println("exceptionCaught");
         cause.printStackTrace();
         ctx.close();
     }

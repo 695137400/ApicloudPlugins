@@ -142,7 +142,7 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
                     if (appID.equalsIgnoreCase("action=ip")) {
                         ipStrings = wifiSyncServer.getLocalIP();
                         if (ipStrings.endsWith(",")) {
-                            FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.copiedBuffer(ipStrings.substring(0, ipStrings.length() - 1) + ":" + HttpFileServer.getWebsocketPort() + "\r\n", CharsetUtil.UTF_8));
+                            FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, Unpooled.copiedBuffer(ipStrings.substring(0, ipStrings.length() - 1) + ":" + wifiSyncServer.getWebsocketport() + "\r\n", CharsetUtil.UTF_8));
                             response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/plain; charset=UTF-8");
                             ctx.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
                             return "noop";
@@ -269,7 +269,12 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
                             while (var9.hasNext()) {
                                 e = (Map.Entry) var9.next();
                                 channel = (Channel) e.getKey();
-                                channel.writeAndFlush(new TextWebSocketFrame("{\"command\":\"1\",\"appid\":\"" + fileurl + "\",\"updateAll\":true" + "}"));
+                                if (channel.isOpen()) {
+                                    channel.writeAndFlush(new TextWebSocketFrame("{\"command\":\"1\",\"appid\":\"" + fileurl + "\",\"updateAll\":true" + "}"));
+                                }else {
+                                   /* channel.disconnect();
+                                    channel.close();*/
+                                }
                             }
 
                             return "noop";

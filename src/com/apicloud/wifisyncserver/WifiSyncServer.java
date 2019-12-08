@@ -1,6 +1,7 @@
 package com.apicloud.wifisyncserver;
 
 import com.alibaba.fastjson.JSON;
+import com.apicloud.networkservice.ConnectionUtil;
 import com.apicloud.plugin.run.ApicloudRun;
 import com.apicloud.plugin.util.ApicloudConstant;
 import com.apicloud.plugin.util.PrintUtil;
@@ -25,6 +26,23 @@ public class WifiSyncServer {
 
     private String workspacePath;
     private int httpport = 10080;
+
+    public int getHttpport() {
+        return httpport;
+    }
+
+    public void setHttpport(int httpport) {
+        this.httpport = httpport;
+    }
+
+    public int getWebsocketport() {
+        return websocketport;
+    }
+
+    public void setWebsocketport(int websocketport) {
+        this.websocketport = websocketport;
+    }
+
     private int websocketport = 10915;
     ApicloudRun httpServer = null;
     ApicloudRun websocketServer = null;
@@ -59,12 +77,12 @@ public class WifiSyncServer {
                 while (enumIpAddr.hasMoreElements()) {
                     InetAddress inetAddress = (InetAddress) enumIpAddr.nextElement();
                     if (!inetAddress.isLoopbackAddress() && !inetAddress.isLinkLocalAddress() && inetAddress.isSiteLocalAddress()) {
-                        sb.append(inetAddress.getHostAddress().toString() + ",");
+                        sb.append(inetAddress.getHostAddress() + ",");
                     }
                 }
             }
         } catch (SocketException var5) {
-            ;
+            var5.printStackTrace();
         }
 
         return sb.toString();
@@ -73,7 +91,6 @@ public class WifiSyncServer {
     public void run(String[] args) throws Exception {
         if (args.length > 1) {
             setWorkspacePath(args[0]);
-            System.setProperty("java.net.preferIPv4Stack", "true");
             String stop = args[1];
             PrintUtil.info(JSON.toJSONString(args), projectName);
             String laststr = "";
@@ -140,9 +157,13 @@ public class WifiSyncServer {
                             if (isPortUsing("127.0.0.1", websocketport)) {
                                 websocketport += (new Random()).nextInt(10000);
                             } else {
-                                socketServer.run(websocketport);
-                                jsonObject.put("websocket_port", websocketport);
+                                PrintUtil.info("WiFi 端口更新: " + websocketport, projectName);
+
+                                jsonObject.put("websocket_port", "" + websocketport);
+                                jsonObject.put("http_port", httpport);
+
                                 ApicloudConstant.WIFI_CONFIG_INFO = jsonObject.toString();
+                                socketServer.run(websocketport);
                                 break;
                             }
                         } catch (Exception var3) {

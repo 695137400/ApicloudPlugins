@@ -1,8 +1,8 @@
 <idea-plugin>
-    <version>3.15</version>
+    <version>3.19</version>
     <idea-version since-build="107.121"/>
     <id>com.apicloud.plugin</id><!--插件唯一标识-->
-    <name>Apicloud Plugin</name><!--插件显示名称-->
+    <name>Apicloud</name><!--插件显示名称-->
     <vendor email="695137400@qq.com">李志超</vendor><!--备注，作者信息-->
     <description><![CDATA[
                     <p>本插件是为了方便开发<a href="https://www.apicloud.com"></a>Apicloud</p>
@@ -38,12 +38,8 @@
         ]]></description><!--描述-->
     <change-notes><![CDATA[
                        <ul>
-                        <li>IDEA支持创建多个项目</li>
-                        <li>Create multiple projects</li>
-                        <li>新增WIFI调试</li>
-                        <li>WIFI Debug</li>
-                        <li>适配三大主流操作系统的adb（window,linux,mac）</li>
-                        <li>adapter adb</li>
+                        <li>修复WIFI偶尔同步失败</li>
+                        <li>Fix occasional wifi sync failure</li>
                     </ul>
 ]]></change-notes>
     <!--<depends>com.intellij.modules.lang</depends>&lt;!&ndash;&ndash;&gt;-->
@@ -56,7 +52,6 @@
 
 
 
-         <fileEditorProvider implementation="com.apicloud.plugin.ui.split.preview.ApicloudSplitEditorProvider"/>
     </extensions>
     <!--  <application-components>
           <component>

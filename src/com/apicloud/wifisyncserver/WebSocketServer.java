@@ -3,10 +3,7 @@ package com.apicloud.wifisyncserver;
 import com.apicloud.plugin.util.ApicloudConstant;
 import com.apicloud.plugin.util.PrintUtil;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -15,6 +12,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import org.json.JSONObject;
 
+import java.net.SocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WebSocketServer {
 
     private Map<Channel, String> map = new ConcurrentHashMap();
-    private String httpPort = "10080";
+    private Map<String, Channel> f_map = new ConcurrentHashMap();
     private Channel ch = null;
     private String projectName = null;
 
@@ -37,22 +35,18 @@ public class WebSocketServer {
         projectName = name;
     }
 
+    public Map<String, Channel> getF_map() {
+        return f_map;
+    }
+
     public Map<Channel, String> getMap() {
         return map;
-    }
-
-    public synchronized String getHttpPort() {
-        return httpPort;
-    }
-
-    public synchronized void setHttpPort(String port) {
-        httpPort = port;
     }
 
     public void run(int port) throws Exception {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         NioEventLoopGroup workerGroup = new NioEventLoopGroup();
-
+        map.clear();
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup).channel(NioServerSocketChannel.class).childHandler(new ChannelInitializer<SocketChannel>() {
@@ -60,25 +54,15 @@ public class WebSocketServer {
                     ChannelPipeline pipeline = ch.pipeline();
                     pipeline.addLast("http-codec", new HttpServerCodec());
                     pipeline.addLast("aggregator", new HttpObjectAggregator(65536));
-                    ch.pipeline().addLast("http-chunked", new ChunkedWriteHandler());
+                    pipeline.addLast("http-chunked", new ChunkedWriteHandler());
                     pipeline.addLast("handler", new WebSocketServerHandler(projectName));
+                    System.out.println("WebSocketServer/////////////////");
+                    System.out.println("initChannel");
                 }
             });
             ch = b.bind(port).sync().channel();
-            PrintUtil.info("WiFi 端口更新: " + port, projectName);
 
-            String laststr = "";
-            if (null != ApicloudConstant.WIFI_CONFIG_INFO && "" != ApicloudConstant.WIFI_CONFIG_INFO) {
-                laststr = ApicloudConstant.WIFI_CONFIG_INFO;
-            }
-
-            JSONObject jsonObject = new JSONObject(laststr);
-            jsonObject.put("websocket_port", "" + port);
-            jsonObject.put("http_port", getHttpPort());
-
-            ApicloudConstant.WIFI_CONFIG_INFO = jsonObject.toString();
-            HttpFileServer.setWebsocketPort("" + port);
-            ch.closeFuture().syncUninterruptibly();
+            ch.closeFuture().sync();
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
