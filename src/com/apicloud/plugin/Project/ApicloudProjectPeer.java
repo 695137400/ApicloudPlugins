@@ -1,6 +1,7 @@
 package com.apicloud.plugin.Project;
 
 import com.apicloud.plugin.ui.createApp.CreateAppFrom;
+import com.apicloud.plugin.util.ProjectData;
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.platform.WebProjectGenerator;
@@ -8,7 +9,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.io.File;
 
 /**
  * Created with IntelliJ IDEA.
@@ -17,28 +17,29 @@ import java.io.File;
  * Time: 21:45:19
  * Description:
  */
-public class ApicloudProjectPeer implements WebProjectGenerator.GeneratorPeer<String> {
+public class ApicloudProjectPeer implements WebProjectGenerator.GeneratorPeer<ProjectData> {
 
     private JComboBox myExecutablePathField = new JComboBox();
 
     @NotNull
     @Override
-    public String getSettings() {
-        return myExecutablePathField.getSelectedItem().toString();
+    public ProjectData getSettings() {
+        return (ProjectData) myExecutablePathField.getSelectedItem();
     }
 
     @Override
     public void buildUI(@NotNull final SettingsStep step) {
         System.out.println("创建工程、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、");
-        myExecutablePathField.addItem("default");
-        myExecutablePathField.addItem("bottom");
-        myExecutablePathField.addItem("home");
-        myExecutablePathField.addItem("slide");
+
+        myExecutablePathField.addItem(new ProjectData("default"));
+        myExecutablePathField.addItem(new ProjectData("bottom"));
+        myExecutablePathField.addItem(new ProjectData("home"));
+        myExecutablePathField.addItem(new ProjectData("slide"));
         myExecutablePathField.setVisible(false);
         step.addSettingsField("", myExecutablePathField);
         CreateAppFrom createAppFrom = new CreateAppFrom();
         createAppFrom.myExecutablePathField = myExecutablePathField;
-        step.addSettingsField("选择模版：", createAppFrom.panel1);
+        step.addSettingsComponent(createAppFrom.panel1);
         System.out.println("创建UI完成");
     }
 

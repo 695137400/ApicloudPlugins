@@ -1,6 +1,9 @@
 package com.apicloud.plugin.Project;
 
+import com.apicloud.plugin.run.WebStorm;
 import com.apicloud.plugin.util.PrintUtil;
+import com.apicloud.plugin.util.ProjectData;
+import com.apicloud.plugin.util.RunProperties;
 import com.intellij.ide.util.projectWizard.WebProjectTemplate;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -34,7 +37,7 @@ import java.util.Random;
 /**
  * WEB 模版
  */
-public class ApicloudProjectTemplateGenerator extends WebProjectTemplate<String> {
+public class ApicloudProjectTemplateGenerator extends WebProjectTemplate<ProjectData> {
 
     /**
      * 插件名称
@@ -57,11 +60,13 @@ public class ApicloudProjectTemplateGenerator extends WebProjectTemplate<String>
     }
 
     @Override
-    public void generateProject(Project project, VirtualFile file, String type, Module module) {
+    public void generateProject(Project project, VirtualFile file, ProjectData data, Module module) {
         try {
             // PrintUtil.init(project);
             String projectPath = file.getCanonicalPath();
             PrintUtil.msg += "开始创建工程\n";
+            WebStorm webStorm = RunProperties.getWebStorm(project.getName());
+            webStorm.setAdbPath(data.getAdbPath());
             Properties properties = System.getProperties();
             String systemPath = properties.getProperty("idea.plugins.path");
             File tempPath = new File(FileUtil.getTempDirectory() + "/apicloud-intelliJ-plugin");
@@ -72,14 +77,14 @@ public class ApicloudProjectTemplateGenerator extends WebProjectTemplate<String>
                 PrintUtil.msg += ("插件寻找结果：resources.jar exists:" + new File(systemPath + "/ApicloudPlugins/lib/resources.jar").exists() + "\n");
                 com.apicloud.plugin.util.FileUtil.unZip(systemPath + "/ApicloudPlugins/lib/resources.jar", tempPath.getAbsolutePath() + "/", false);
             }
-            PrintUtil.msg += ("当前选择创建工程类型：" + type + "\n");
-            if ("default".equals(type)) {
+            PrintUtil.msg += ("当前选择创建工程类型：" + data.getType() + "\n");
+            if ("default".equals(data.getType())) {
                 com.apicloud.plugin.util.FileUtil.copyFolder(tempPath.getAbsolutePath() + "/widget/default/", projectPath + "/");
-            } else if ("bottom".equals(type)) {
+            } else if ("bottom".equals(data.getType())) {
                 com.apicloud.plugin.util.FileUtil.copyFolder(tempPath.getAbsolutePath() + "/widget/bottom/", projectPath + "/");
-            } else if ("home".equals(type)) {
+            } else if ("home".equals(data.getType())) {
                 com.apicloud.plugin.util.FileUtil.copyFolder(tempPath.getAbsolutePath() + "/widget/home/", projectPath + "/");
-            } else if ("slide".equals(type)) {
+            } else if ("slide".equals(data.getType())) {
                 com.apicloud.plugin.util.FileUtil.copyFolder(tempPath.getAbsolutePath() + "/widget/slide/", projectPath + "/");
             }
             PrintUtil.msg += ("config.xml封装：" + module.getName() + "\n");

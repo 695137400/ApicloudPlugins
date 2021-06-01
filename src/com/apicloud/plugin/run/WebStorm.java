@@ -25,6 +25,15 @@ public class WebStorm {
     private String loaderName;
     private String pendingVersion;
     private String workPath;//ProjectFileDir
+
+    public String getAdbPath() {
+        return adbPath;
+    }
+
+    public void setAdbPath(String adbPath) {
+        this.adbPath = adbPath;
+    }
+
     public String adbPath;//
     private String cmdLogType;//load.conf
     private String wigetPath;
@@ -187,21 +196,16 @@ public class WebStorm {
             return -1;
         }
         PrintUtil.info("isMacOS:" + isMacOS(), projectName);
-        if (isMacOS()) {
-            adbPath = toolsFile.getAbsolutePath() + File.separator + "adb-ios";
-            String chx = "chmod +x " + adbPath;
-            runCmd(chx, false);
-        } else if (isLinux()) {
-            adbPath = toolsFile.getAbsolutePath() + File.separator + "adb-linux";
-            String chx = "chmod +x " + adbPath;
-            runCmd(chx, false);
-        } else {
-            adbPath = toolsFile.getAbsolutePath() + File.separator + "adb.exe";
-        }
-        String out = (String)  runCmd("adb",false);
-        if (out.contains("Android")) {
-            adbPath = "adb ";
-            PrintUtil.info("检测到系统有ADB环境，优先使用系统ADB", projectName);
+        if (null == adbPath && "".equalsIgnoreCase(adbPath)) {
+            if (isMacOS()) {
+                adbPath = toolsFile.getAbsolutePath() + File.separator + "adb-ios";
+                String chx = "chmod +x " + adbPath;
+                runCmd(chx, false);
+            } else if (isLinux()) {
+                adbPath = toolsFile.getAbsolutePath() + File.separator + "adb-linux";
+                String chx = "chmod +x " + adbPath;
+                runCmd(chx, false);
+            }
         }
         PrintUtil.info("adbPath:" + adbPath, projectName);
         InputStreamReader read = new InputStreamReader(new FileInputStream(load_conf_file));// 考虑到编码格式
