@@ -45,10 +45,9 @@
     <!--<depends>com.intellij.modules.lang</depends>&lt;!&ndash;&ndash;&gt;-->
     <depends>com.intellij.modules.platform</depends>
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Apicloud Log" anchor="bottom" icon="/com/apicloud/plugin/icons/apicloud.png" factoryClass="com.apicloud.plugin.tail.TailRunExecutor"/>
         <projectTemplatesFactory implementation="com.apicloud.plugin.Project.ApicloudTemplateFactory"/><!--兼容IDEA-->
         <directoryProjectGenerator implementation="com.apicloud.plugin.Project.ApicloudProjectTemplateGenerator"/><!--兼容WebStorm-->
-        <search.topHitProvider implementation="com.apicloud.plugin.ApicloudOptionsTopHitProvider"/>
+        <toolWindow id="Apicloud Log" anchor="bottom" icon="/com/apicloud/plugin/icons/apicloud.png" factoryClass="com.apicloud.plugin.tail.TailRunExecutor"/>
 
 
 

@@ -62,30 +62,38 @@ public class ApicloudProjectTemplateGenerator extends WebProjectTemplate<Project
     @Override
     public void generateProject(Project project, VirtualFile file, ProjectData data, Module module) {
         try {
-            // PrintUtil.init(project);
             String projectPath = file.getCanonicalPath();
             PrintUtil.msg += "开始创建工程\n";
-            WebStorm webStorm = RunProperties.getWebStorm(project.getName());
-            webStorm.setAdbPath(data.getAdbPath());
             Properties properties = System.getProperties();
             String systemPath = properties.getProperty("idea.plugins.path");
-            File tempPath = new File(FileUtil.getTempDirectory() + "/apicloud-intelliJ-plugin");
-            if (!tempPath.exists()) {
-                PrintUtil.msg += ("临时解压文件路径：" + tempPath + "\n");
-                PrintUtil.msg += ("当前工程路径：" + projectPath + "\n");
-                PrintUtil.msg += ("当前系统缓存路径：" + systemPath + "\n");
-                PrintUtil.msg += ("插件寻找结果：resources.jar exists:" + new File(systemPath + "/ApicloudPlugins/lib/resources.jar").exists() + "\n");
-                com.apicloud.plugin.util.FileUtil.unZip(systemPath + "/ApicloudPlugins/lib/resources.jar", tempPath.getAbsolutePath() + "/", false);
+            WebStorm storm = RunProperties.getWebStorm(project.getName());
+            String out = (String) storm.runCmd("adb ", false);
+            if (null != out && !"".equalsIgnoreCase(out) && out.contains("Installed as")) {
+                RunProperties.setAdbPath("adb");
+            } else {
+                if (storm.isMacOS() || storm.isLinux()) {
+                    String chx = "chmod +x " + systemPath + "/ApicloudPlugins/lib/tools/adb-ios";
+                    storm.runCmd(chx, false);
+                    chx = "chmod +x " + systemPath + "/ApicloudPlugins/lib/tools/adb-linux";
+                    storm.runCmd(chx, false);
+                }
+                if (storm.isMacOS()) {
+                    RunProperties.setAdbPath(systemPath + "/ApicloudPlugins/lib/tools/adb-ios");
+                } else if (storm.isLinux()) {
+                    RunProperties.setAdbPath(systemPath + "/ApicloudPlugins/lib/tools/adb-linux");
+                } else {
+                    RunProperties.setAdbPath(systemPath + "/ApicloudPlugins/lib/tools/adb.exe");
+                }
             }
             PrintUtil.msg += ("当前选择创建工程类型：" + data.getType() + "\n");
             if ("default".equals(data.getType())) {
-                com.apicloud.plugin.util.FileUtil.copyFolder(tempPath.getAbsolutePath() + "/widget/default/", projectPath + "/");
+                com.apicloud.plugin.util.FileUtil.copyFolder(systemPath + "/ApicloudPlugins/lib/widget/default/", projectPath + "/");
             } else if ("bottom".equals(data.getType())) {
-                com.apicloud.plugin.util.FileUtil.copyFolder(tempPath.getAbsolutePath() + "/widget/bottom/", projectPath + "/");
+                com.apicloud.plugin.util.FileUtil.copyFolder(systemPath + "/ApicloudPlugins/lib/widget/bottom/", projectPath + "/");
             } else if ("home".equals(data.getType())) {
-                com.apicloud.plugin.util.FileUtil.copyFolder(tempPath.getAbsolutePath() + "/widget/home/", projectPath + "/");
+                com.apicloud.plugin.util.FileUtil.copyFolder(systemPath + "/ApicloudPlugins/lib/widget/home/", projectPath + "/");
             } else if ("slide".equals(data.getType())) {
-                com.apicloud.plugin.util.FileUtil.copyFolder(tempPath.getAbsolutePath() + "/widget/slide/", projectPath + "/");
+                com.apicloud.plugin.util.FileUtil.copyFolder(systemPath + "/ApicloudPlugins/lib/widget/slide/", projectPath + "/");
             }
             PrintUtil.msg += ("config.xml封装：" + module.getName() + "\n");
 
@@ -109,7 +117,7 @@ public class ApicloudProjectTemplateGenerator extends WebProjectTemplate<Project
             DocumentBuilder db = factory.newDocumentBuilder();
             Document xmldoc = db.parse(new File(config));
             root = xmldoc.getDocumentElement();
-            root.setAttribute("id","A"+String.valueOf(new Random().nextLong()).replaceAll("-","").substring(0,13));
+            root.setAttribute("id", "A" + String.valueOf(new Random().nextLong()).replaceAll("-", "").substring(0, 13));
             wgtName = (Element) selectSingleNode("/widget/name", root);
             wgtName.setTextContent(name);
             saveXml(config, xmldoc);

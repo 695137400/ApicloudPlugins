@@ -11,6 +11,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.apicloud.plugin.util.FileUtil;
 import com.apicloud.plugin.util.PrintUtil;
+import com.apicloud.plugin.util.RunProperties;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -26,15 +27,6 @@ public class WebStorm {
     private String pendingVersion;
     private String workPath;//ProjectFileDir
 
-    public String getAdbPath() {
-        return adbPath;
-    }
-
-    public void setAdbPath(String adbPath) {
-        this.adbPath = adbPath;
-    }
-
-    public String adbPath;//
     private String cmdLogType;//load.conf
     private String wigetPath;
     private String projectName;
@@ -62,7 +54,6 @@ public class WebStorm {
 
         try {
             PrintUtil.info("checkBasicInfo...", projectName);
-            checkBasicInfo(workPath);
             List<String> devices = getDevices();
             PrintUtil.info("get devices..." + devices.size(), projectName);
             if (devices.size() == 0) {
@@ -99,7 +90,7 @@ public class WebStorm {
                 if (currentVersion != null) {
                    /* PrintUtil.info("compareAppLoaderVer...", projectName);
                     isNeedInstall = compareAppLoaderVer(currentVersion, pendingVersion);*/
-                }else {
+                } else {
                     isOk = installAppLoaderCmd(device);
                 }
                 /*PrintUtil.info("isNeedInstall is " + isNeedInstall, projectName);
@@ -174,58 +165,6 @@ public class WebStorm {
         return false;
     }
 
-    private int checkBasicInfo(String workParh) throws IOException {
-        File toolsFile = new File(workParh + "/tools");
-        PrintUtil.info("tools:" + workParh + "/tools", projectName);
-        PrintUtil.info("toolsFile.exists:" + toolsFile.exists(), projectName);
-        PrintUtil.info("toolsFile.isDirectory:" + toolsFile.isDirectory(), projectName);
-        if (!toolsFile.exists() || !toolsFile.isDirectory()) {
-            return -1;
-        }
-        String loaderPath = workPath + "/loader" + File.separator;
-
-        File load_conf_file = new File(loaderPath + "/load.conf");
-        PrintUtil.info("load_conf_file.exists:" + load_conf_file.exists(), projectName);
-        PrintUtil.info("load_conf_file:" + load_conf_file.getAbsolutePath(), projectName);
-        //TODO APK更新
-        File load_apk_file = new File(loaderPath + "/load.apk");
-        PrintUtil.info("load_apk_file:" + load_apk_file.getAbsolutePath(), projectName);
-        PrintUtil.info("load_apk_file.exists:" + load_apk_file.exists(), projectName);
-
-        if (!load_conf_file.exists() || !load_apk_file.exists()) {
-            return -1;
-        }
-        PrintUtil.info("isMacOS:" + isMacOS(), projectName);
-        if (null == adbPath && "".equalsIgnoreCase(adbPath)) {
-            if (isMacOS()) {
-                adbPath = toolsFile.getAbsolutePath() + File.separator + "adb-ios";
-                String chx = "chmod +x " + adbPath;
-                runCmd(chx, false);
-            } else if (isLinux()) {
-                adbPath = toolsFile.getAbsolutePath() + File.separator + "adb-linux";
-                String chx = "chmod +x " + adbPath;
-                runCmd(chx, false);
-            }
-        }
-        PrintUtil.info("adbPath:" + adbPath, projectName);
-        InputStreamReader read = new InputStreamReader(new FileInputStream(load_conf_file));// 考虑到编码格式
-        BufferedReader bufferedReader = new BufferedReader(read);
-        String lineTxt = null;
-        StringBuffer conf = new StringBuffer();
-        while ((lineTxt = bufferedReader.readLine()) != null) {
-            conf.append(lineTxt);
-        }
-        read.close();
-        PrintUtil.info(conf.toString(), projectName);
-        JSONObject json = JSONObject.parseObject(conf.toString());
-        if (json.containsKey("version")) {
-            pendingVersion = json.getString("version");
-        }
-        if (json.containsKey("cmdLogType")) {
-            cmdLogType = json.getString("cmdLogType");
-        }
-        return 0;
-    }
 
     public boolean isMacOS() {
         return OS.indexOf("mac") >= 0 && OS.indexOf("os") > 0;
@@ -247,7 +186,7 @@ public class WebStorm {
 
     public List<String> getDevices() throws IOException {
         List<String> devices = new ArrayList<String>();
-        String cmd = adbPath + " devices ";
+        String cmd = RunProperties.getAdbPath() + " devices ";
 
 
         Process p = (Process) runCmd(cmd, true);
@@ -289,7 +228,7 @@ public class WebStorm {
             runCmd(cmd, false);
         }
         FileUtil.copyFolder(srcPath, cachePath);
-        String pushCmd = adbPath + " -s " + serialNumber + " push " + cachePath + " " + desPath;
+        String pushCmd = RunProperties.getAdbPath() + " -s " + serialNumber + " push " + cachePath + " " + desPath;
         if (!isMacOS() && !isLinux()) {
             pushCmd = "cmd.exe /C start " + pushCmd;
         }
@@ -364,7 +303,7 @@ public class WebStorm {
         fw.flush();
         pw.close();
         fw.close();
-        String pushCmd = adbPath + " -s " + serialNumber + " push " + srcPath + " " + desPath;
+        String pushCmd = RunProperties.getAdbPath() + " -s " + serialNumber + " push " + srcPath + " " + desPath;
         PrintUtil.info("pushCmd = " + pushCmd, projectName);
         String out = (String) runCmd(pushCmd, false);
 
@@ -388,7 +327,7 @@ public class WebStorm {
 
     private String getApploaderVersionCmd(String serialNumber) throws IOException {
         String version = null;
-        String cmd = adbPath + " -s " + serialNumber + " shell dumpsys package " + pkgName;
+        String cmd = RunProperties.getAdbPath() + " -s " + serialNumber + " shell dumpsys package " + pkgName;
         //Logger.log(cmd);
         String out = (String) runCmd(cmd, false);
 
@@ -405,7 +344,7 @@ public class WebStorm {
     }
 
     private boolean uninstallApploaderCmd(String serialNumber) throws IOException {
-        String uninstallCmd = adbPath + " -s " + serialNumber + " uninstall " + pkgName;
+        String uninstallCmd = RunProperties.getAdbPath() + " -s " + serialNumber + " uninstall " + pkgName;
 
         String out = (String) runCmd(uninstallCmd, false);
 
@@ -417,7 +356,7 @@ public class WebStorm {
 
     private boolean installAppLoaderCmd(String serialNumber) throws IOException {
         String appLoader = workPath + "/loader" + File.separator + "load.apk";
-        String installCmd = adbPath + " -s " + serialNumber + " install " + appLoader;
+        String installCmd = RunProperties.getAdbPath() + " -s " + serialNumber + " install " + appLoader;
 
         String out = (String) runCmd(installCmd, false);
         PrintUtil.info("out  == " + out, projectName);
@@ -428,13 +367,13 @@ public class WebStorm {
     }
 
     public void stopApploaderCmd(String serialNumber) {
-        String stopCmd = adbPath + " -s " + serialNumber + " shell am force-stop " + pkgName;
+        String stopCmd = RunProperties.getAdbPath() + " -s " + serialNumber + " shell am force-stop " + pkgName;
         runCmd(stopCmd, false);
     }
 
     private boolean startApploaderCmd(String serialNumber) throws IOException {
         String appLoaderPkg = pkgName + "/com.uzmap.pkg.EntranceActivity";
-        String startCmd = adbPath + " -s " + serialNumber + " shell am start -W -n " + appLoaderPkg;
+        String startCmd = RunProperties.getAdbPath() + " -s " + serialNumber + " shell am start -W -n " + appLoaderPkg;
 
         String out = (String) runCmd(startCmd, false);
 
@@ -469,13 +408,13 @@ public class WebStorm {
 
             while ((out = buf.readLine()) != null) {
 //				Logger.log("out  == "+out);
-                okString.append(out+"\n");
+                okString.append(out + "\n");
 
             }
 
             while ((out = errBuf.readLine()) != null) {
 //				Logger.log(out);
-                okString.append(out+"\n");
+                okString.append(out + "\n");
             }
             buf.close();
             errBuf.close();

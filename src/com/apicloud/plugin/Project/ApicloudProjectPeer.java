@@ -19,33 +19,25 @@ import javax.swing.*;
  */
 public class ApicloudProjectPeer implements WebProjectGenerator.GeneratorPeer<ProjectData> {
 
-    private JComboBox myExecutablePathField = new JComboBox();
-
+    CreateAppFrom createAppFrom = CreateAppFrom.getInstance();
     @NotNull
     @Override
     public ProjectData getSettings() {
-        return (ProjectData) myExecutablePathField.getSelectedItem();
+        return createAppFrom.getProjectData();
     }
 
     @Override
     public void buildUI(@NotNull final SettingsStep step) {
         System.out.println("创建工程、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、");
-
-        myExecutablePathField.addItem(new ProjectData("default"));
-        myExecutablePathField.addItem(new ProjectData("bottom"));
-        myExecutablePathField.addItem(new ProjectData("home"));
-        myExecutablePathField.addItem(new ProjectData("slide"));
-        myExecutablePathField.setVisible(false);
-        step.addSettingsField("", myExecutablePathField);
-        CreateAppFrom createAppFrom = new CreateAppFrom();
-        createAppFrom.myExecutablePathField = myExecutablePathField;
         step.addSettingsComponent(createAppFrom.panel1);
         System.out.println("创建UI完成");
+
     }
 
 
     @Override
     public void addSettingsStateListener(@NotNull final WebProjectGenerator.SettingsStateListener listener) {
+        System.out.println();
     }
 
     @Nullable

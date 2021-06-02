@@ -38,26 +38,13 @@ public class IosApicloudRunAction extends AnAction implements DumbAware {
             FileDocumentManager.getInstance().saveAllDocuments();
             PrintUtil.info("----------->点击IOS运行按钮", project.getName());
             Properties properties = System.getProperties();
-            String systemPath = properties.getProperty("idea.plugins.path");
             new Thread() {
                 @Override
                 public void run() {
                     try {
                         Thread.sleep(300);
-                        WebStorm webStorm = RunProperties.getWebStorm(project.getName());
-                        File tempPath = new File(FileUtil.getTempDirectory().toString() + "/apicloud-intelliJ-plugin");
-                        if (!tempPath.exists()) {
-                            tempPath = FileUtil.createTempDirectory("apicloud-intelliJ-plugin", null, true);
-                            com.apicloud.plugin.util.FileUtil.unZip(systemPath + "/ApicloudPlugins/lib/resources.jar", tempPath.getAbsolutePath() + "/", false);
-                            Thread.sleep(100);
-                            if (webStorm.isMacOS() || webStorm.isLinux()) {
-                                String chx = "chmod +x " + tempPath.getAbsolutePath() + "/tools/adb-ios";
-                                webStorm.runCmd(chx, false);
-                                chx = "chmod +x " + tempPath.getAbsolutePath() + "/tools/adb-linux";
-                                webStorm.runCmd(chx, false);
-                            }
-                        }
-                        String adbPath = tempPath.getAbsolutePath();
+                        Properties properties = System.getProperties();
+                        String systemPath = properties.getProperty("idea.plugins.path");
                         IosLoader iosLoader = RunProperties.getIosLoader(project.getName());
                         String projectPath = event.getProject().getBaseDir().getParent().getPath();
                         String modulePath = event.getProject().getBasePath();
@@ -65,7 +52,7 @@ public class IosApicloudRunAction extends AnAction implements DumbAware {
                             String moduleName = module.getName();
                             modulePath = projectPath + "/" + moduleName;
                         }
-                        iosLoader.run(adbPath, modulePath);
+                        iosLoader.run(systemPath + "/ApicloudPlugins/lib/", modulePath);
                     } catch (Exception e) {
                         e.printStackTrace();
                         PrintUtil.error(e.getMessage(), project.getName());
