@@ -3,17 +3,15 @@
     <output-path>$PROJECT_DIR$/out/production/artifacts</output-path>
     <root id="root">
       <element id="archive" name="ApicloudPlugins.zip">
-        <element id="directory" name="ApicloudPlugins">
-          <element id="directory" name="lib">
-            <element id="archive" name="ApicloudPlugins.jar">
-              <element id="module-output" name="ApicloudPlugins" />
-            </element>
-            <element id="file-copy" path="$PROJECT_DIR$/libs/fastjson-1.1.33.jar" />
-            <element id="file-copy" path="$PROJECT_DIR$/libs/wifisync.jar" />
-            <element id="file-copy" path="$PROJECT_DIR$/libs/wifisyncmanager.jar" />
-            <element id="library" level="project" name="dom4j-1.6.1" />
-            <element id="file-copy" path="$PROJECT_DIR$/libs/resources.jar" />
+        <element id="directory" name="lib">
+          <element id="archive" name="ApicloudPlugins.jar">
+            <element id="module-output" name="ApicloudPlugins" />
           </element>
+          <element id="file-copy" path="$PROJECT_DIR$/libs/fastjson-1.1.33.jar" />
+          <element id="file-copy" path="$PROJECT_DIR$/libs/wifisync.jar" />
+          <element id="file-copy" path="$PROJECT_DIR$/libs/wifisyncmanager.jar" />
+          <element id="library" level="project" name="dom4j-1.6.1" />
+          <element id="dir-copy" path="$PROJECT_DIR$/libs/resources" />
         </element>
       </element>
     </root>

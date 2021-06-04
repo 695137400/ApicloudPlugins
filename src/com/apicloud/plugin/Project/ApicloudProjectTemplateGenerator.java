@@ -30,6 +30,7 @@ import javax.xml.xpath.XPathFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.net.URL;
 import java.util.Properties;
 import java.util.Random;
 
@@ -163,6 +164,10 @@ public class ApicloudProjectTemplateGenerator extends WebProjectTemplate<Project
      */
     @Override
     public Icon getIcon() {
-        return new ImageIcon(getClass().getResource("/com/apicloud/plugin/icons/apicloud.png"));
+        URL url = getClass().getResource("/com/apicloud/plugin/icons/apicloud.png");
+        ImageIcon icon = new ImageIcon(url);
+        RunProperties.pluginsPath  =  url.getPath().split("!")[0].replace("file:", "").replace("ApicloudPlugins.jar", "");
+        System.out.println( "pluginsPath-->   "+  RunProperties.pluginsPath);
+        return icon;
     }
 }

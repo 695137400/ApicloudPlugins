@@ -291,4 +291,6 @@ public class RunProperties {
         }
     }
 
+
+    public static String pluginsPath;
 }

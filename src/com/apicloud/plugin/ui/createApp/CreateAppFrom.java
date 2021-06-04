@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.apicloud.plugin.run.WebStorm;
 import com.apicloud.plugin.util.ProjectData;
 import com.apicloud.plugin.util.RunProperties;
+import com.intellij.ide.plugins.cl.PluginClassLoader;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.TextBrowseFolderListener;
@@ -73,17 +74,20 @@ public class CreateAppFrom {
                 }
             }
         });
-        Properties properties = System.getProperties();
-        String systemPath = properties.getProperty("idea.plugins.path");
         WebStorm storm = RunProperties.getWebStorm("create");
-        String path = "";
-        if (storm.isMacOS()) {
-            path = systemPath + "/ApicloudPlugins/lib/tools/adb-ios";
-        } else if (storm.isLinux()) {
-            path = systemPath + "/ApicloudPlugins/lib/tools/adb-linux";
-        } else {
-            path = systemPath + "/ApicloudPlugins/lib/tools/adb.exe";
+        String path = null;
+        try {
+            if (storm.isMacOS()) {
+                path = RunProperties.pluginsPath + "/tools/adb-ios";
+            } else if (storm.isLinux()) {
+                path = RunProperties.pluginsPath + "/tools/adb-linux";
+            } else {
+                path = RunProperties.pluginsPath + "/tools/adb.exe";
+            }
+        } catch (Exception e) {
+
         }
+
         textField1.setText(path);
 
         kongPanel.addMouseListener(new MouseAdapter() {
