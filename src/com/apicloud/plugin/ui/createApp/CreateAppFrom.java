@@ -3,6 +3,7 @@ package com.apicloud.plugin.ui.createApp;
 import com.alibaba.fastjson.JSON;
 import com.apicloud.plugin.run.WebStorm;
 import com.apicloud.plugin.util.ProjectData;
+import com.apicloud.plugin.util.RunProperties;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.TextBrowseFolderListener;
@@ -17,6 +18,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Properties;
 
 /**
  * Created with IntelliJ IDEA.<br/>
@@ -71,6 +73,19 @@ public class CreateAppFrom {
                 }
             }
         });
+        Properties properties = System.getProperties();
+        String systemPath = properties.getProperty("idea.plugins.path");
+        WebStorm storm = RunProperties.getWebStorm("create");
+        String path = "";
+        if (storm.isMacOS()) {
+            path = systemPath + "/ApicloudPlugins/lib/tools/adb-ios";
+        } else if (storm.isLinux()) {
+            path = systemPath + "/ApicloudPlugins/lib/tools/adb-linux";
+        } else {
+            path = systemPath + "/ApicloudPlugins/lib/tools/adb.exe";
+        }
+        textField1.setText(path);
+
         kongPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -184,7 +199,7 @@ public class CreateAppFrom {
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
         panel2.setEnabled(true);
-        panel2.setVisible(false);
+        panel2.setVisible(true);
         panel1.add(panel2, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));

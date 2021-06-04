@@ -157,7 +157,6 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
                     Channel channel;
                     if (values[0].equalsIgnoreCase("action=sync") && values[1].startsWith("appid=")) {
                         fileurl = values[1].substring(6);
-                        PrintUtil.info("[action=sync]appid = " + fileurl, projectName);
                         map = webSocketServer.getMap();
                         if (map.size() < 1) {
                             PrintUtil.error("Error:没有手机连接到WiFi同步服务.\n请先到apploader或自定义loader中配置WiFi同步参数。", projectName);
@@ -250,7 +249,6 @@ public class HttpFileServerHandler extends SimpleChannelInboundHandler<FullHttpR
                         if (values[0].equalsIgnoreCase("action=workspace") && values[1].startsWith("path=")) {
                             fileurl = values[1].substring(5);
                             fileurl = fileurl.substring(1, fileurl.length() - 1);
-                            PrintUtil.info("[action=workspace]path = " + fileurl, projectName);
                             wifiSyncServer.setWorkspacePath(fileurl);
                             return "noop";
                         }

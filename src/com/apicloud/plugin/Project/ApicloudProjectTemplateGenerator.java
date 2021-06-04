@@ -66,25 +66,7 @@ public class ApicloudProjectTemplateGenerator extends WebProjectTemplate<Project
             PrintUtil.msg += "开始创建工程\n";
             Properties properties = System.getProperties();
             String systemPath = properties.getProperty("idea.plugins.path");
-            WebStorm storm = RunProperties.getWebStorm(project.getName());
-            String out = (String) storm.runCmd("adb ", false);
-            if (null != out && !"".equalsIgnoreCase(out) && out.contains("Installed as")) {
-                RunProperties.setAdbPath("adb");
-            } else {
-                if (storm.isMacOS() || storm.isLinux()) {
-                    String chx = "chmod +x " + systemPath + "/ApicloudPlugins/lib/tools/adb-ios";
-                    storm.runCmd(chx, false);
-                    chx = "chmod +x " + systemPath + "/ApicloudPlugins/lib/tools/adb-linux";
-                    storm.runCmd(chx, false);
-                }
-                if (storm.isMacOS()) {
-                    RunProperties.setAdbPath(systemPath + "/ApicloudPlugins/lib/tools/adb-ios");
-                } else if (storm.isLinux()) {
-                    RunProperties.setAdbPath(systemPath + "/ApicloudPlugins/lib/tools/adb-linux");
-                } else {
-                    RunProperties.setAdbPath(systemPath + "/ApicloudPlugins/lib/tools/adb.exe");
-                }
-            }
+            RunProperties.setAdbPath(data.getAdbPath());
             PrintUtil.msg += ("当前选择创建工程类型：" + data.getType() + "\n");
             if ("default".equals(data.getType())) {
                 com.apicloud.plugin.util.FileUtil.copyFolder(systemPath + "/ApicloudPlugins/lib/widget/default/", projectPath + "/");

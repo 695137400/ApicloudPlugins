@@ -1,12 +1,6 @@
 package com.apicloud.plugin.tail;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.apicloud.console.log.ConsoleLog;
 import com.apicloud.plugin.run.WebStorm;
-import com.apicloud.plugin.ui.createApp.CreateAppFrom;
-import com.apicloud.plugin.util.HttpClientUtil;
 import com.apicloud.plugin.util.PrintUtil;
 import com.apicloud.plugin.util.RunProperties;
 import com.intellij.execution.DefaultExecutionResult;
@@ -14,7 +8,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
-import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.runners.ExecutionEnvironment;
@@ -27,7 +20,6 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
@@ -36,14 +28,10 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 public class TailContentExecutor implements Disposable {
     private final Project myProject;
-    private final List<Filter> myFilterList = new ArrayList<>();
     private ConsoleView consoleView = null;
 
     public TailContentExecutor(@NotNull Project project) {
@@ -60,23 +48,18 @@ public class TailContentExecutor implements Disposable {
                 Properties properties = System.getProperties();
                 String systemPath = properties.getProperty("idea.plugins.path");
                 WebStorm storm = RunProperties.getWebStorm(project.getName());
-                String out = (String) storm.runCmd("adb ", false);
-                if (null != out && !"".equalsIgnoreCase(out) && out.contains("Installed as")) {
-                    RunProperties.setAdbPath("adb");
+                if (storm.isMacOS() || storm.isLinux()) {
+                    String chx = "chmod +x " + systemPath + "/ApicloudPlugins/lib/tools/adb-ios";
+                    storm.runCmd(chx, false);
+                    chx = "chmod +x " + systemPath + "/ApicloudPlugins/lib/tools/adb-linux";
+                    storm.runCmd(chx, false);
+                }
+                if (storm.isMacOS()) {
+                    RunProperties.setAdbPath(systemPath + "/ApicloudPlugins/lib/tools/adb-ios");
+                } else if (storm.isLinux()) {
+                    RunProperties.setAdbPath(systemPath + "/ApicloudPlugins/lib/tools/adb-linux");
                 } else {
-                    if (storm.isMacOS() || storm.isLinux()) {
-                        String chx = "chmod +x " + systemPath + "/ApicloudPlugins/lib/tools/adb-ios";
-                        storm.runCmd(chx, false);
-                        chx = "chmod +x " + systemPath + "/ApicloudPlugins/lib/tools/adb-linux";
-                        storm.runCmd(chx, false);
-                    }
-                    if (storm.isMacOS()) {
-                        RunProperties.setAdbPath(systemPath + "/ApicloudPlugins/lib/tools/adb-ios");
-                    } else if (storm.isLinux()) {
-                        RunProperties.setAdbPath(systemPath + "/ApicloudPlugins/lib/tools/adb-linux");
-                    } else {
-                        RunProperties.setAdbPath(systemPath + "/ApicloudPlugins/lib/tools/adb.exe");
-                    }
+                    RunProperties.setAdbPath(systemPath + "/ApicloudPlugins/lib/tools/adb.exe");
                 }
             }
         } catch (Exception e) {
@@ -85,8 +68,8 @@ public class TailContentExecutor implements Disposable {
     }
 
     private ConsoleView createConsole(@NotNull Project project) {
+
         TextConsoleBuilder consoleBuilder = TextConsoleBuilderFactory.getInstance().createBuilder(project);
-        consoleBuilder.filters(myFilterList);
         ConsoleView console = consoleBuilder.getConsole();
         return console;
     }

@@ -1,12 +1,16 @@
 package com.apicloud.wifisyncserver;
 
 import com.apicloud.commons.model.Config;
+import com.apicloud.plugin.run.WebStorm;
 import com.apicloud.plugin.util.PrintUtil;
 import com.apicloud.plugin.util.RunProperties;
 import com.intellij.openapi.util.io.FileUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.util.CharsetUtil;
@@ -18,8 +22,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,12 +75,13 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
                     webSocketServer.getMap().remove(webSocketServer.getF_map().get(ip));
                     webSocketServer.getF_map().remove(ip);
                 }
-                webSocketServer.getF_map().put(ip,ctx.channel());
+                webSocketServer.getF_map().put(ip, ctx.channel());
                 webSocketServer.getMap().put(ctx.channel(), ip);
                 RunProperties.addIp(ip);
                 this.handshaker.handshake(ctx.channel(), req);
                 ctx.channel().write(new TextWebSocketFrame("{\"command\":\"7\",\"port\":\"" + wifiSyncServer.getWebsocketport() + "\"}"));
-               // ctx.channel().write(new TextWebSocketFrame("{\"command\":\"7\",\"port\":\"" + wifiSyncServer.getHttpport() + "\"}"));
+                // ctx.channel().write(new TextWebSocketFrame("{\"command\":\"7\",\"port\":\"" + wifiSyncServer.getHttpport() + "\"}"));
+                PrintUtil.info("安卓10以后由于权限限制导致无法同步数据，请使用USB同步，现在链接USB将自动开启无线WIFI：", projectName);
             }
 
         } else {
@@ -241,11 +244,24 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<Object> 
                     try {
                         JSONArray jsonarray = new JSONArray(strJsonFormatted);
                         long localTimestamp = System.currentTimeMillis();
+
+
                         ctx.channel().write(new TextWebSocketFrame("{\"command\":\"3\",\"timestamp\":\"" + localTimestamp + "\",\"list\":" + jsonarray.toString() + "}"));
                     } catch (JSONException var22) {
                         var22.printStackTrace();
                     }
+                    try {
+                        for (String ip : RunProperties.getIpList().keySet()) {
+                            for (int i = 0; i < newModifiedFileList.size(); i++) {
+                                String fileName = destPrjPath + "/" + newModifiedFileList.get(i).replace("/" + appID + "/", "");
+                                WebStorm webStorm = RunProperties.getWebStorm(projectName);
+                                webStorm.runCmd(RunProperties.getAdbPath() + " -s " + ip + ":8888 push " + fileName + " /sdcard/UZMap/wgt" + newModifiedFileList.get(i), false);
+                            }
+                        }
+                    } catch (Exception e) {
 
+                    }
+                    RunProperties.pushRun = true;
                     try {
                         FileWriter fw = new FileWriter(fileList, false);
                         fw.write("");

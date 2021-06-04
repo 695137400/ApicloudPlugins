@@ -17,7 +17,7 @@
         </constraints>
         <properties>
           <enabled value="true"/>
-          <visible value="false"/>
+          <visible value="true"/>
         </properties>
         <border type="none"/>
         <children>

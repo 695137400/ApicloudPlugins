@@ -50,7 +50,6 @@ public class AndroidApicloudRunAction extends AnAction implements DumbAware {
                     try {
                         Thread.sleep(300);
                         WebStorm webStorm = RunProperties.getWebStorm(project.getName());
-                        String adbPath = RunProperties.getAdbPath();
                         Properties properties = System.getProperties();
                         String systemPath = properties.getProperty("idea.plugins.path");
                         String projectPath = event.getProject().getBaseDir().getParent().getPath();
@@ -60,7 +59,6 @@ public class AndroidApicloudRunAction extends AnAction implements DumbAware {
                             modulePath = projectPath + "/" + moduleName;
                         }
                         webStorm.run(systemPath + "/ApicloudPlugins/lib/", modulePath);
-                        RunProperties.wifiAdb(webStorm,project.getName(),adbPath);
                     } catch (Exception e) {
                         e.printStackTrace();
                         PrintUtil.error(e.getMessage(), project.getName());

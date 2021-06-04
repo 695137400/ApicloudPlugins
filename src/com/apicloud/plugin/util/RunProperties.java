@@ -6,15 +6,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.apicloud.console.log.ConsoleLog;
 import com.apicloud.plugin.run.IosLoader;
 import com.apicloud.plugin.run.WebStorm;
-import com.apicloud.plugin.ui.createApp.CreateAppFrom;
 import com.apicloud.wifisyncmanager.WifiSyncManager;
 import com.apicloud.wifisyncserver.WebSocketServer;
 import com.apicloud.wifisyncserver.WifiSyncServer;
 import com.intellij.execution.ui.ConsoleView;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.io.FileUtil;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -149,8 +145,8 @@ public class RunProperties {
         return ipList.get(ip);
     }
 
-    public static String adbIp(String ip) {
-        return ipList.get(ip);
+    public static HashMap<String, String> getIpList() {
+        return ipList;
     }
 
     private static ArrayList<String> ips = new ArrayList<>();
@@ -175,10 +171,6 @@ public class RunProperties {
     public static void setAdbPath(String adbPath) {
         RunProperties.adbPath = adbPath;
     }
-
-
-    public static Thread adbThread;
-
 
 
     private static void adbTools(WebStorm webStorm, String projectName, String adbPath, String device) {
@@ -207,19 +199,12 @@ public class RunProperties {
                         for (int i = 0; i < array.size(); i++) {
                             JSONObject jo = (JSONObject) array.get(i);
                             RunProperties.adbWifi(device + jo.getString("id"), "1");
-                            PrintUtil.info("\n名称：" + new String(jo.getString("title").getBytes("gbk"), "utf-8"), projectName);
+                            PrintUtil.info("\n名称：" + jo.getString("title"), projectName);
                             PrintUtil.printUrl("url：", projectName, "chrome-devtools://devtools/bundled/inspector.html?ws=localhost:9888/devtools/page/" + jo.getString("id"));
                             PrintUtil.printInfoNoDate("说明： " + jo.getString("url"), projectName);
 
                         }
                         PrintUtil.info(urls + "\n", projectName);
-                        Thread runnable = new Thread() {
-                            public void run() {
-                                ConsoleLog consoleLog = RunProperties.getConsoleLog(projectName);
-                                consoleLog.main(adbPath + "/", device);
-                            }
-                        };
-                        runnable.start();
                     }
                 }
             } catch (Exception e) {
@@ -228,85 +213,82 @@ public class RunProperties {
         }
     }
 
-    public static void wifiAdb(WebStorm webStorm, String projectName, String adbPath) {
-        Object adbwwifi = null;
-        try {
-            String adbList[] = new String[0];
-            try {
-                adbwwifi = webStorm.runCmd(adbPath + " devices", false);
-                System.out.println(adbwwifi);
-                adbList = adbwwifi.toString().split("\n");
-            } catch (Exception e) {
+    public static boolean wifiAdbConn = false;
+    public static boolean pushRun = false;
+    static String adbwwifi;
 
-            }
-            if (null != adbList && adbList.length > 0) {
-                for (int i = 1; i < adbList.length; i++) {
-                    final String adbDevices = adbList[i];
-                    if (null != adbDevices && !"".equals(adbDevices)) {
-                        String[] adb = adbDevices.split("\t");
-                        String name = adb[0];
-                        String status = adb[1];
-                        if (name.split("\\.").length > 2) {// ip
-                            RunProperties.adbIp(name, status);
-                            String s = null;
-                            try {
-                                s = HttpClientUtil.sendGet("http://localhost:9888/json", "v=1");
-                            } catch (Exception e) {
+    private static void getDevices(WebStorm webStorm, String projectName) {
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    System.out.println("wifiAdb 启动");
+                    while (wifiAdbConn) {
+                        try {
+                            Thread.sleep(3000);
+                            adbwwifi = (String) webStorm.runCmd(adbPath + " devices", false);
+                            System.out.println(adbwwifi);
+                            String[] devicesList = adbwwifi.split("\n");
+                            openTcp(devicesList, webStorm, projectName);
+                        } catch (Exception e) {
 
-                            }
-                            if (null == s || "".equals(s)) {
-                                adbTools(webStorm, projectName, adbPath, name);
-                            } else {
-                                JSONArray array = (JSONArray) JSON.parse(s);
-                                String urls = "";
-                                if (null != array) {
-                                    boolean isnew = false;
-                                    for (int y = 0; y < array.size(); y++) {
-                                        JSONObject jo = (JSONObject) array.get(y);
-                                        if (null == RunProperties.adbWifi(name + jo.getString("id"))) {
-                                            if (!isnew) {
-                                                PrintUtil.info("\n调试地址更新：" + urls + "\n", projectName);
-                                                isnew = true;
-                                            }
-                                            RunProperties.adbWifi(name + jo.getString("id"), "1");
-                                            PrintUtil.info("\n名称：" + new String(jo.getString("title").getBytes("gbk"), "utf-8"), projectName);
-                                            PrintUtil.printUrl("url：", projectName, "chrome-devtools://devtools/bundled/inspector.html?ws=localhost:9888/devtools/page/" + jo.getString("id"));
-                                            PrintUtil.printInfoNoDate("说明： " + jo.getString("url"), projectName);
-                                        }
-                                    }
-                                }
-                            }
-                        } else {//编号
-                            RunProperties.adbDevices(name, status);
-                            if ("device".equals(status) || (null != RunProperties.adbDevices(name) && !"device".equals(RunProperties.adbDevices(name)))) {
+                        }
+                        if (pushRun) {
+                            pushRun = false;
+                            for (String ip : ipList.keySet()) {
                                 try {
-                                    webStorm.runCmd(adbPath + " tcpip 8888", false);
-                                    ArrayList<String> ips = RunProperties.getIP();
-                                    if (ips.size() > 0) {
-                                        for (int p = 0; p < ips.size(); p++) {
-                                            try {
-                                                String ipstatus = RunProperties.adbIp(ips.get(p));
-                                                if (null == ipstatus || (null != ipstatus && !"device".equals(ipstatus))) {
-                                                    webStorm.runCmd(adbPath + " connect " + ips.get(p) + ":8888", false);
-                                                    RunProperties.adbIp(ips.get(p), "1");
-                                                    PrintUtil.error("检测到有已链接的USB设备，开启可用 WIFI ADB 无线调试，您现在可以断开USB数据链接，打开谷歌浏览器进行方便的无线调试", projectName);
-                                                    adbTools(webStorm, projectName, adbPath, name);
-                                                }
-                                            } catch (Exception e) {
-                                            }
-                                        }
-                                    }
+                                    adbTools(webStorm, projectName, getAdbPath(), ip + ":8888");
                                 } catch (Exception e) {
 
                                 }
                             }
                         }
                     }
+                    System.out.println("wifiAdb 停止");
+                } catch (Exception e) {
+
                 }
             }
-        } catch (Exception e) {
-
-        }
-
+        }.start();
     }
+
+    public static void wifiAdb(WebStorm webStorm, String projectName) {
+        try {
+            getDevices(webStorm, projectName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void openTcp(String[] devs, WebStorm webStorm, String projectName) {
+        for (int i = 1; i < devs.length; i++) {
+            String adbDevices = devs[i];
+            if (null != adbDevices && !"".equals(adbDevices)) {
+                String[] adb = adbDevices.split("\t");
+                String name = adb[0];
+                String status = adb[1];
+                if (name.split("\\.").length > 2) {
+
+                } else {
+                    if ("device".equals(status)) {
+                        if (null == adbList.get(name)) {
+                            String tcpOut = (String) webStorm.runCmd(adbPath + " -s " + name + " tcpip 8888", false);
+                            if (null != tcpOut && tcpOut.contains("restarting in TCP mode port")) {
+                                adbList.put(name, "1");
+                            }
+                        }
+                    } else {
+                        adbList.remove(name);
+                    }
+                }
+            }
+        }
+        for (String ip : ipList.keySet()) {
+            String connTcpOut = (String) webStorm.runCmd(adbPath + " connect " + ip + ":8888", false);
+            if (null != connTcpOut && !connTcpOut.contains("failed") && !connTcpOut.contains("refused")) {
+                ipList.put(ip, "device");
+            }
+        }
+    }
+
 }

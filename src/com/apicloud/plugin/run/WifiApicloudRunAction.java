@@ -46,6 +46,9 @@ public class WifiApicloudRunAction extends AnAction implements DumbAware {
                         WifiSyncManager wifiSyncManager = RunProperties.getWifiSyncManager(project.getName());
                         wifiSyncManager.main(new String[]{"1"});
                         System.setProperty("java.net.preferIPv4Stack", "true");
+                        WebStorm webStorm = RunProperties.getWebStorm(project.getName());
+                        RunProperties.wifiAdbConn = true;
+                        RunProperties.wifiAdb(webStorm,project.getName());
                     } catch (Exception e) {
                         PrintUtil.error(e.getMessage(), project.getName());
                     }
@@ -67,6 +70,8 @@ public class WifiApicloudRunAction extends AnAction implements DumbAware {
                             PrintUtil.error("wifi服务已停止", project.getName());
                             RunProperties.pushType(project.getName(), null);
                             System.setProperty("java.net.preferIPv4Stack", "false");
+                            RunProperties.wifiAdbConn = false;
+                            WifiQrcode.getInstance().setIcon(new ImageIcon(WifiQrcode.class.getResource("/com/apicloud/plugin/icons/apicloud.png")).getImage());
                         } catch (Exception e) {
                             PrintUtil.error(e.getMessage(), project.getName());
                         }

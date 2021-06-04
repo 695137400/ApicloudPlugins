@@ -58,16 +58,19 @@
           </component>
       </application-components>-->
     <actions>
-        <action id="ApicloudRunAction" class="com.apicloud.plugin.run.AndroidApicloudRunAction">
-            <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="MainMenu"/><!--添加运行按钮-->
+<!--        <action id="ApicloudRunAction" class="com.apicloud.plugin.run.AndroidApicloudRunAction">
+            <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="MainMenu"/>&lt;!&ndash;添加运行按钮&ndash;&gt;
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-        </action>
-        <action id="IOSRunAction" class="com.apicloud.plugin.run.IosApicloudRunAction">
-            <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="MainMenu"/><!--添加运行按钮-->
+        </action>-->
+<!--        <action id="IOSRunAction" class="com.apicloud.plugin.run.IosApicloudRunAction">
+            <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="MainMenu"/>&lt;!&ndash;添加运行按钮&ndash;&gt;
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-        </action>
+        </action>-->
         <action id="WifiServiceAction" class="com.apicloud.plugin.run.WifiApicloudRunAction">
             <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="MainMenu"/><!--添加运行按钮-->
+        </action>
+        <action id="WifiServiceActionHelp" class="com.apicloud.plugin.run.WifiQrcode">
+            <add-to-group group-id="HelpMenu" anchor="before" relative-to-action="HelpMenu"/><!--添加运行按钮-->
         </action>
         <action id="PushRunAction" class="com.apicloud.plugin.run.PushRunAction">
             <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="MainMenu"/><!--添加运行按钮-->

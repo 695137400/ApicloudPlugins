@@ -1,9 +1,15 @@
 package com.apicloud.wifisyncmanager;
 
+import com.alibaba.fastjson.JSON;
 import com.apicloud.networkservice.ConnectionUtil;
+import com.apicloud.plugin.run.WifiQrcode;
 import com.apicloud.plugin.util.ApicloudConstant;
 import com.apicloud.plugin.util.FileUtil;
 import com.apicloud.plugin.util.PrintUtil;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import com.intellij.openapi.project.Project;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
@@ -11,6 +17,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+import javax.swing.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -18,10 +25,11 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.<br/>
@@ -71,6 +79,30 @@ public class WifiSyncManager {
                         PrintUtil.info("WiFi 链接地址( " + i + "): " + appId, projectName);
                         ++i;
                     }
+                    try {
+                        Map<String, Object> wifiObj = new HashMap<>();
+                        wifiObj.put("port", values[1]);
+                        ArrayList ips = new ArrayList();
+                        ips.add(var33[var33.length - 1]);
+                        wifiObj.put("ips", ips);
+                        System.out.println(JSON.toJSON(wifiObj));
+
+                        QRCodeWriter qrCodeWriter1 = new QRCodeWriter();
+                        //设置二维码图片宽高
+                        BitMatrix bitMatrix = qrCodeWriter1.encode(JSON.toJSONString(wifiObj), BarcodeFormat.QR_CODE, 300, 300);
+                        int width = bitMatrix.getWidth();
+                        int height = bitMatrix.getHeight();
+
+                        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+                        for (int q = 0; q < width; q++) {
+                            for (int j = 0; j < height; j++) {
+                                image.setRGB(q, j, bitMatrix.get(q, j) ? 0XFF000000 : 0XFFFFFF);
+                            }
+                        }
+                         WifiQrcode.getInstance().setIcon(image);
+                    } catch (WriterException e) {
+                        e.printStackTrace();
+                    }
 
                     return;
                 case 2:
@@ -85,19 +117,14 @@ public class WifiSyncManager {
 
                     htmlPath = args[2];
                     workspacePath = "http://127.0.0.1:" + httpPort + "/?action=workspace" + "&path=\"" + htmlPath + "\"";
-                    PrintUtil.info("连接到：" + workspacePath, projectName);
                     message0 = ConnectionUtil.getConnectionMessage(workspacePath, null);
-                    PrintUtil.info("message = " + message0, projectName);
                     getWidgetPath(wigetPath);
-                    PrintUtil.info("wigetPath = " + wigetPath, projectName);
                     configPath = wigetPath + File.separator + "config.xml";
-                    PrintUtil.info("configPath = " + configPath, projectName);
                     File var29 = new File(configPath);
                     if (!var29.exists()) {
                         PrintUtil.info("Not found config.xml", projectName);
                         return;
                     }
-                    PrintUtil.info("getAppId...", projectName);
                     appId = FileUtil.getAppId(configPath);
                     if (appId != null && !"".equals(appId)) {
                         String cmd = null;
@@ -108,9 +135,7 @@ public class WifiSyncManager {
                         }
 
                         String url = "http://127.0.0.1:" + httpPort + "/?action=" + cmd + "&appid=" + appId;
-                        PrintUtil.info("url = " + url, projectName);
                         String message = ConnectionUtil.getConnectionMessage(url, null);
-                        PrintUtil.info("message = " + message, projectName);
                         break;
                     }
                     PrintUtil.info("Please make sure the directory is correct", projectName);
@@ -129,10 +154,8 @@ public class WifiSyncManager {
                     workspacePath = args[2];
                     message0 = "http://127.0.0.1:" + httpPort + "/?action=workspace" + "&path=\"" + workspacePath + "\"";
                     configPath = ConnectionUtil.getConnectionMessage(message0, null);
-                    PrintUtil.info("message = " + configPath, projectName);
                     String var12 = "http://127.0.0.1:" + httpPort + "/?action=review" + "&path=\"" + htmlPath + "\"";
                     appId = ConnectionUtil.getConnectionMessage(var12, null);
-                    PrintUtil.info("message = " + appId, projectName);
             }
 
         }
