@@ -1,133 +1,62 @@
 {
-  "access": {
-    "accessText": "*"
-  },
-  "appDescription": "\n        API Example App.\n    ",
-  "appId": "A6914338590058",
-  "appName": "CapitalOperation",
-  "author": {
-    "authorName": "NkXing",
-    "email": "695137400@qq.com",
-    "href": "http://www.apicloud.com"
-  },
-  "content": "index.html",
-  "feature": [
+  "MerchantId": "111",
+  "MerchantName": "河南移动测试商户",
+  "state": 1,
+  "shopList": [
     {
-      "forceBind": true,
-      "param": [
+      "shopId": "s1",
+      "shopName": "手机店",
+      "state": 1,
+      "brands": [
         {
-          "name": "urlScheme",
-          "value": "wx7779c7c063a9d4d9"
+          "brandNum": "b1",
+          "brandName": "海尔"
         },
         {
-          "name": "apiKey",
-          "value": "wx7779c7c063a9d4d9"
-        }
-      ],
-      "titleName": "weiXin"
-    },
-    {
-      "forceBind": true,
-      "param": [
-        {
-          "name": "urlScheme",
-          "value": "wb1062272715"
+          "brandNum": "b2",
+          "brandName": "小米"
         },
         {
-          "name": "apiKey",
-          "value": "1062272715"
+          "brandNum": "b2",
+          "brandName": "长虹"
         }
       ],
-      "titleName": "sinaWeiBo"
-    },
-    {
-      "forceBind": true,
-      "param": [
+      "goodTypes": [
         {
-          "name": "urlScheme",
-          "value": "AliPayA00000000001"
-        }
-      ],
-      "titleName": "aliPay"
-    },
-    {
-      "forceBind": true,
-      "param": [
-        {
-          "name": "apiKey",
-          "value": "fef72715gshjelke"
-        }
-      ],
-      "titleName": "baiduLocation"
-    },
-    {
-      "forceBind": true,
-      "param": [
-        {
-          "name": "android_api_key",
-          "value": "fef72715gshjelke"
+          "typeId": "t1",
+          "typeName": "手机通讯",
+          "level": 1,
+          "parentId": 0
         },
         {
-          "name": "ios_api_key",
-          "value": "fef72715gshjelke"
-        }
-      ],
-      "titleName": "baiduMap"
-    },
-    {
-      "forceBind": true,
-      "param": [
-        {
-          "name": "urlScheme",
-          "value": "tencent9c7c063a9d4d9"
+          "typeId": "t2",
+          "typeName": "手机",
+          "level": 2,
+          "parentId": "t1"
         },
         {
-          "name": "apiKey",
-          "value": "9c7c063a9d4d9"
+          "typeId": "t3",
+          "typeName": "智能手机",
+          "level": 3,
+          "parentId": "t2"
         }
       ],
-      "titleName": "qq"
+      "goodList": [
+        {
+          "goodId": "g1",
+          "goodName": "小米1 6+128",
+          "brandNum": "b2",
+          "state": 1,
+          "typeId": "t3"
+        },
+        {
+          "goodId": "g2",
+          "goodName": "小米1 4+64",
+          "brandNum": "b2",
+          "state": 1,
+          "typeId": "t3"
+        }
+      ]
     }
-  ],
-  "permission": {
-    "bootCompleted": true,
-    "call": true,
-    "camera": true,
-    "contact": true,
-    "fileSystem": true,
-    "hardware": true,
-    "internetl": false,
-    "location": true,
-    "readPhoneState": true,
-    "record": true,
-    "sms": true
-  },
-  "preference": {
-    "allowKeyboardExtension": true,
-    "appBackground": "",
-    "appCertificateVerify": true,
-    "autoLaunch": true,
-    "autoUpdate": true,
-    "backgroundMode": "",
-    "checkSslTrusted": true,
-    "customRefreshHeader": "",
-    "debug": false,
-    "dragAndDrop": true,
-    "fileShare": false,
-    "font": "",
-    "forbiddenSchemes": "",
-    "frameBackgroundColor": "",
-    "fullScreen": false,
-    "launcher": true,
-    "pageBounce": true,
-    "querySchemes": "",
-    "smartUpdate": true,
-    "softInputBarEnabled": true,
-    "softInputMode": "auto",
-    "statusBarAppearance": true,
-    "urlScheme": "",
-    "userAgent": "",
-    "windowBackground": ""
-  },
-  "version": "0.0.1"
+  ]
 }

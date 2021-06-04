@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PLUGIN_MODULE" version="4">
   <component name="DevKit.ModuleBuildProperties" url="file://$MODULE_DIR$/resources/META-INF/plugin.xml" />
-  <component name="NewModuleRootManager">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
     <output url="file://$MODULE_DIR$/out/production/ApicloudPlugins" />
     <output-test url="file://$MODULE_DIR$/out/test/ApicloudPlugins" />
     <exclude-output />
@@ -14,11 +14,21 @@
     <orderEntry type="library" name="fastjson-1.1.33" level="project" />
     <orderEntry type="library" name="wifisync" level="project" />
     <orderEntry type="library" name="wifisyncmanager" level="project" />
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="WebStorm WS-211.7142.46" jdkType="IDEA JDK" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES />
+        <JAVADOC />
+        <NATIVE>
+          <root url="file://$MODULE_DIR$/libs/resources" />
+        </NATIVE>
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/libs/resources.jar!/" />
+          <root url="jar://$MODULE_DIR$/libs/core-3.3.3.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

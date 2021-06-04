@@ -1,13 +1,11 @@
 package com.apicloud.plugin.Project;
 
-import com.apicloud.plugin.run.WebStorm;
 import com.apicloud.plugin.util.PrintUtil;
 import com.apicloud.plugin.util.ProjectData;
 import com.apicloud.plugin.util.RunProperties;
 import com.intellij.ide.util.projectWizard.WebProjectTemplate;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
@@ -31,7 +29,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.net.URL;
-import java.util.Properties;
 import java.util.Random;
 
 
@@ -65,8 +62,7 @@ public class ApicloudProjectTemplateGenerator extends WebProjectTemplate<Project
         try {
             String projectPath = file.getCanonicalPath();
             PrintUtil.msg += "开始创建工程\n";
-            Properties properties = System.getProperties();
-            String systemPath = properties.getProperty("idea.plugins.path");
+            String systemPath = RunProperties.pluginsPath;
             RunProperties.setAdbPath(data.getAdbPath());
             PrintUtil.msg += ("当前选择创建工程类型：" + data.getType() + "\n");
             if ("default".equals(data.getType())) {
